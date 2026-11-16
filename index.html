@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>KIM ARZON? – Teskari auksion</title>
+<script src="https://cdn.tailwindcss.com/3.4.17"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<script src="config.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&family=Unbounded:wght@600;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0f172a;--card:#16213a;--card2:#1c2947;--line:#273556;--txt:#e8edf7;--mut:#8b9ab8;--em:#10b981;--gold:#f59e0b;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+html{color-scheme:dark;scroll-padding-top:env(safe-area-inset-top,0px)}
+body{background:var(--bg);color:var(--txt);font-family:'Manrope',system-ui,sans-serif;min-height:100vh;display:flex;justify-content:center;-webkit-tap-highlight-color:transparent}
+.disp{font-family:'Unbounded','Manrope',sans-serif}
+#app{width:100%;max-width:440px;min-height:100vh;position:relative;padding-bottom:100px}
+.navb{display:flex;flex-direction:column;align-items:center;gap:2px;font-size:11px;font-weight:700;color:var(--mut);padding:2px 0}.navb span{font-size:21px}.navb.on{color:var(--em)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:20px}
+.pill{border:1px solid var(--line);background:var(--card);border-radius:999px;padding:8px 14px;font-size:13px;font-weight:600;white-space:nowrap;transition:.2s}
+.pill.on{background:rgba(16,185,129,.2);border-color:var(--em);color:var(--em);box-shadow:0 0 14px rgba(16,185,129,.55)}
+.inp{width:100%;background:var(--card2);border:1px solid var(--line);border-radius:14px;padding:13px 14px;color:var(--txt);font-size:16px;outline:none;transition:.2s}
+.inp:focus{border-color:var(--em);box-shadow:0 0 0 3px rgba(16,185,129,.18)}
+.btn{background:linear-gradient(135deg,#10b981,#0ea371);color:#04130d;font-weight:800;border-radius:16px;padding:15px;width:100%;transition:transform .15s}
+.btn:active{transform:scale(.97)}
+.glow{animation:glow 2.2s ease-in-out infinite}
+@keyframes glow{0%,100%{box-shadow:0 0 14px rgba(16,185,129,.35)}50%{box-shadow:0 0 34px rgba(16,185,129,.8)}}
+.pop{animation:pop .5s cubic-bezier(.2,1.3,.4,1)}
+@keyframes pop{from{opacity:0;transform:translateY(-14px) scale(.96)}to{opacity:1;transform:none}}
+.view{animation:fade .3s ease}
+@keyframes fade{from{opacity:0}to{opacity:1}}
+.seg{position:relative;display:grid;grid-template-columns:1fr 1fr;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:4px}
+.seg i{position:absolute;top:4px;bottom:4px;left:4px;width:calc(50% - 4px);background:var(--em);border-radius:12px;transition:transform .3s cubic-bezier(.4,0,.2,1)}
+.seg.s i{transform:translateX(100%);background:var(--gold)}
+.seg button{position:relative;z-index:1;padding:9px 4px;font-size:12.5px;font-weight:800;color:var(--mut);line-height:1.2;transition:.3s}
+.seg button.on{color:#06140e}
+.best{border-color:var(--gold);box-shadow:0 0 0 1px rgba(245,158,11,.4),0 8px 30px rgba(245,158,11,.12)}
+.tag{font-size:11px;font-weight:700;padding:3px 8px;border-radius:999px;background:rgba(16,185,129,.14);color:var(--em)}
+.modal{position:fixed;inset:0;background:rgba(2,6,15,.75);backdrop-filter:blur(6px);display:flex;align-items:flex-end;justify-content:center;z-index:50;animation:fade .2s}
+.sheet{width:100%;max-width:440px;background:var(--card);border-radius:28px 28px 0 0;padding:28px 22px calc(28px + env(safe-area-inset-bottom,0px));animation:up .35s cubic-bezier(.2,1,.3,1)}
+@keyframes up{from{transform:translateY(100%)}to{transform:none}}
+#toast{position:fixed;top:calc(14px + env(safe-area-inset-top,0px));left:50%;transform:translate(-50%,-120px);background:var(--card2);border:1px solid var(--gold);color:var(--txt);padding:11px 16px;border-radius:14px;font-size:13px;font-weight:700;transition:.3s;z-index:60;max-width:92%}
+#toast.show{transform:translate(-50%,0)}
+.live{width:8px;height:8px;border-radius:50%;background:var(--em);animation:blink 1.2s infinite}
+@keyframes blink{50%{opacity:.25}}
+.noscroll::-webkit-scrollbar{display:none}
+.cf{position:fixed;top:-20px;width:9px;height:14px;border-radius:2px;z-index:45;pointer-events:none;animation:fall linear forwards}
+@keyframes fall{to{transform:translateY(110vh) rotate(720deg)}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div id="app">
+  <header class="px-5 pt-5 pb-3 sticky top-0 z-20" style="background:linear-gradient(var(--bg) 80%,transparent)">
+    <div class="flex items-center justify-between mb-4">
+      <div class="disp text-xl font-extrabold tracking-tight">KIM <span style="color:var(--em)">ARZON?</span><span class="text-[10px] ml-2 px-2 py-0.5 rounded-full align-middle" style="background:var(--gold);color:#1a1100;font-family:Manrope">v6.1</span></div>
+      <button id="pbtn" class="flex items-center gap-2 rounded-full pl-1 pr-3 py-1 border text-xs font-bold" style="border-color:var(--line);background:var(--card)" onclick="openProfile()"></button>
+    </div>
+    <div class="seg" id="seg"><i></i>
+      <button id="rb" class="on" onclick="setRole('b')">Xaridor<br><span class="font-semibold opacity-80">Buyurtma berish</span></button>
+      <button id="rs" onclick="setRole('s')">Sotuvchi<br><span class="font-semibold opacity-80">Narx taklif qilish</span></button>
+    </div>
+  </header>
+  <main id="main" class="px-5 pt-2"></main>
+</div>
+<div id="toast"></div><nav id="nav" style="position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:440px;z-index:41;background:rgba(15,23,42,.95);backdrop-filter:blur(12px);border-top:1px solid var(--line);padding:8px 8px calc(8px + env(safe-area-inset-bottom,0px));display:grid;grid-template-columns:repeat(4,1fr)"><button class="navb on" onclick="navGo(0)"><span>🏠</span>Asosiy</button><button class="navb" onclick="navGo(1)"><span>🛒</span>Bozor</button><button class="navb" onclick="navGo(2)"><span>📊</span>Kabinet</button><button class="navb" onclick="navGo(3)"><span>👤</span>Profil</button></nav>
+<div id="modal"></div><div id="dealwrap"></div><div id="authwrap"></div><div id="dashwrap"></div>
+
+<script>
+const CFG=window.KA_CONFIG||{};
+const sb=(window.supabase&&CFG.SUPABASE_URL&&CFG.SUPABASE_ANON_KEY)?window.supabase.createClient(CFG.SUPABASE_URL,CFG.SUPABASE_ANON_KEY):null;
+const LIVE=!!sb;
+const RATE=12700, MIN15=15*60*1000;
+const SHOPS=[["Malika Store #12","+998 90 123 45 67","malika_store12"],["TechHub UZ","+998 93 555 21 21","techhub_uz"],["Grand Mobile","+998 97 700 11 88","grandmobile_uz"],["Mega Texno","+998 71 200 30 40","megatexno"]];
+const BONUS=["Bepul yetkazib berish","1 yil kafolat","Sovg‘a: himoya oynasi","O‘rnatib berish bepul","Bugunoq yetkazamiz"];
+const CATS={"📱 Telefonlar":["iPhone 15 Pro 256GB",12000000],"🚗 Avto zapchast":["Cobalt old amortizator",900000],"🏠 Maishiy texnika":["Samsung muzlatgich 400L",5500000],"📲 Instagram / Telegram":["Instagram sahifa, 50K obunachi",1500000],"🎮 O‘yin akkauntlari (PUBG/MLBB)":["PUBG Mobile akkaunt, Conqueror",1000000]};
+const REG=['Toshkent shahri','Toshkent viloyati','Qoraqalpog‘iston Respublikasi','Andijon viloyati','Buxoro viloyati','Farg‘ona viloyati','Jizzax viloyati','Xorazm viloyati','Namangan viloyati','Navoiy viloyati','Qashqadaryo viloyati','Samarqand viloyati','Sirdaryo viloyati','Surxondaryo viloyati','🌐 Onlayn (Butun O‘zbekiston)'];
+const ME=["Mening do‘konim","+998 90 000 00 00","mening_dokonim"];
+let role='b', cat='📱 Telefonlar', cond='Yangi', city='Toshkent shahri', myId=null, lastNew=null, bidSeq=1, reqSeq=1;
+let deal=null, dealView='b', revenue=0, meDeals=24;
+let user=null, authStep='menu', smsCode='', aph='', kd={doc:0,selfie:0}, smsExp=0, smsLast=0;
+const trustOld=n=>{if(n===ME[0])return `🛡️ ${meDeals} ta xavfsiz bitim | 4.9★`;let h=0;for(const c of n)h=(h*31+c.charCodeAt(0))%997;return `🛡️ ${8+h%90} ta xavfsiz bitim | ${(4.6+(h%5)/10).toFixed(1)}★`};
+let urg='🔥 Bugun olaman', img=null, prodTxt='', bal=50000, chatBid=null;
+const URG=['🔥 Bugun olaman','📅 Shu hafta','👀 Narx bilmoqchiman'];
+const QUICK=['Kafolat bormi?','Bugun yetkazasizmi?','Narxni tushira olasizmi?'];
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const R=[];
+const $=id=>document.getElementById(id);
+const fmt=n=>n.toString().replace(/\B(?=(\d{3})+(?!\d))/g,' ');
+const usd=n=>'≈ $'+fmt(Math.round(n/RATE));
+const rnd=(a,b)=>a+Math.random()*(b-a);
+const round=n=>Math.round(n/10000)*10000;
+const best=r=>r.bids.length?Math.min(...r.bids.map(b=>b.price)):null;
+const left=r=>Math.max(0,r.end-Date.now());
+const clock=ms=>{const s=Math.ceil(ms/1000);return String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0')};
+function toast(t){const e=$('toast');e.textContent=t;e.classList.add('show');clearTimeout(toast.h);toast.h=setTimeout(()=>e.classList.remove('show'),2300)}
+
+function mk(title,city,cond,base,minsLeft,mine){
+  const r={id:reqSeq++,title:esc(title),city,cond,base,end:Date.now()+minsLeft*60000,urg:URG[1],img:null,unlocked:false,chats:{},phone:'+998 9'+Math.floor(rnd(0,10))+' '+Math.floor(rnd(100,999))+' '+Math.floor(rnd(10,99))+' '+Math.floor(rnd(10,99)),bids:[],mine:!!mine};
+  R.unshift(r);return r;
+}
+function simBid(r){
+  const used=r.bids.length?r.bids[r.bids.length-1].shop:'';
+  const pool=SHOPS.filter(s=>s[0]!==used);
+  const s=pool[Math.floor(Math.random()*pool.length)];
+  const b=best(r);
+  const price=b?round(b*(1-rnd(.01,.045))):round(r.base*rnd(.96,1.04));
+  const pr=Math.max(price,10000),mo=[6,12,24][Math.floor(Math.random()*3)];
+  const bid={id:bidSeq++,shop:s[0],phone:s[1],tg:s[2],price:pr,inst:!r.dig&&Math.random()<.65?{m:mo,pay:Math.round(pr*(1+mo*.015)/mo/1000)*1000}:null,bonus:BONUS[Math.floor(Math.random()*BONUS.length)],verified:true};
+  r.bids.push(bid);lastNew=bid.id;return bid;
+}
+// demo requests for the seller feed
+[["Samsung Galaxy S24 Ultra","Samarqand","Yangi",14500000,11],["Chevrolet Gentra tormoz kolodkasi","Toshkent","Yangi",450000,7],["LG kir yuvish mashinasi 7kg","Buxoro","B/U",2800000,13],["PUBG Mobile akkaunt, Conqueror","🌐 Onlayn (Butun O‘zbekiston)","O‘yin akkaunti",1000000,9]].forEach((a,i)=>{const r=mk(...a);r.urg=URG[i%3];if(i===3)r.dig=true;if(i===3)r.tags=['🎮 PUBG Mobile','🏆 Top Rank','📝 Conqueror, 60 LVL','🛡️ Toza (1 ta pochta)'];simBid(r)});
+
+function setRole(x){dashMode=x;if($('dashwrap').innerHTML)setTimeout(paintDash,0);
+  role=x;$('seg').classList.toggle('s',x==='s');
+  $('rb').classList.toggle('on',x==='b');$('rs').classList.toggle('on',x==='s');
+  render();
+}
+function render(){$('main').innerHTML='<div class="view">'+dealBanner()+(role==='b'?tabsHTML()+(buyTab==='m'?marketHTML():buyerHTML()):sellerHTML())+'</div>';R.forEach(paintBest);refreshRoom()}
+
+/* ---------- BUYER ---------- */
+function buyerHTML(){
+  const r=R.find(x=>x.id===myId);
+  if(r) return roomHTML(r);
+  return `
+  <div class="mb-5"><h1 class="disp text-2xl font-extrabold leading-tight">Nima kerak?<br>Sotuvchilar narx tashlaydi.</h1>
+  <p class="text-sm mt-2" style="color:var(--mut)">Buyurtma yozing – do‘konlar bir-biridan arzon taklif beradi. Eng yaxshisini tanlaysiz.</p></div>
+  <div class="flex gap-2 overflow-x-auto noscroll -mx-5 px-5 mb-4">${Object.keys(CATS).map(c=>`<button class="pill ${c===cat?'on':''}" onclick="pickCat('${c}')">${c}</button>`).join('')}</div>
+  <div class="card p-4 space-y-3">
+    <div><label class="text-xs font-bold" style="color:var(--mut)">Mahsulot nomi</label>
+    <input id="prod" class="inp mt-1" value="${esc(prodTxt||CATS[cat][0])}" oninput="prodTxt=this.value" placeholder="Masalan: iPhone 15 Pro"></div>
+    <div><label class="text-xs font-bold" style="color:var(--mut)">Hudud</label>
+    <button class="inp mt-1 text-left flex justify-between" onclick="openRegion()"><span>📍 ${city}</span><span>▾</span></button><select id="city" class="hidden" onchange="city=this.value">${REG.map(c=>`<option ${c===city?'selected':''}>${c}</option>`).join('')}</select></div>
+    ${isDig()?digFields():''}<div class="${isDig()?'hidden':''}"><label class="text-xs font-bold" style="color:var(--mut)">Holati</label>
+    <div class="flex gap-2 mt-1">${['Yangi','B/U'].map(c=>`<button class="pill flex-1 ${c===cond?'on':''}" onclick="cond='${c}';render()">${c}</button>`).join('')}</div></div>
+  </div>
+  <div class="card p-4 mt-3 space-y-3">
+    <div><label class="text-xs font-bold" style="color:var(--mut)">Qachon kerak?</label>
+    <div class="flex flex-wrap gap-2 mt-1">${URG.map(u=>`<button class="pill ${u===urg?'on':''}" onclick="urg='${u}';render()">${u}</button>`).join('')}</div></div>
+    <div><label class="text-xs font-bold" style="color:var(--mut)">Rasm (ixtiyoriy)</label>
+    <input type="file" id="photo" accept="image/*" class="hidden" onchange="pickImg(this)">
+    ${img?`<div class="relative mt-1"><img src="${img}" alt="" class="w-full h-40 object-cover rounded-2xl"><button class="absolute top-2 right-2 w-8 h-8 rounded-full font-bold" style="background:rgba(2,6,15,.75)" onclick="img=null;render()">✕</button></div>`:`<label for="photo" class="mt-1 flex items-center justify-center gap-2 rounded-2xl py-5 text-sm font-bold cursor-pointer" style="border:1.5px dashed var(--line);color:var(--mut)">📷 Mahsulot rasmini qo‘shish</label>`}</div>
+  </div>
+  <button class="btn glow disp mt-5 text-base" onclick="startAuction()">Auksionni boshlash</button>
+  <p class="text-center text-xs mt-3" style="color:var(--mut)">Auksion 15 daqiqa davom etadi • Faqat tasdiqlangan do‘konlar</p>`;
+}
+const DG={ig:{f:['1k–10k','10k–50k','50k–100k','100k+'],a:['🔥 Yuqori (Tirik)','📊 O‘rtacha','💤 Past / Eski'],y:['Biznes','Ko‘ngilochar','Yangiliklar','Shaxsiy'],m:['✅ Birinchi pochta bor','❌ Yo‘q']},gm:{g:['PUBG Mobile','Mobile Legends','CS2 / Steam','Boshqa'],l:['O‘rtacha','💎 Pro / Rare Skinlar','🏆 Top Rank'],s:['🛡️ Toza (1 ta pochta)','⚠️ Qo‘shimcha ulangan']}};
+let dg={};
+const dgReset=()=>{dg={m:'✅ Birinchi pochta bor',s:'🛡️ Toza (1 ta pochta)'}};dgReset();
+const pl=(k,v)=>`<button class='pill ${dg[k]===v?'on':''}' data-k='${k}' data-v='${esc(v)}' onclick='dgSet(this)'>${v}</button>`;
+const sec=(lb,k,arr,extra='')=>`<div><label class='text-xs font-bold' style='color:var(--mut)'>${lb}</label><div class='flex flex-wrap gap-2 mt-1.5'>${arr.map(v=>pl(k,v)).join('')}</div>${extra}</div>`;
+const dinp=(k,ph,num)=>`<input class='inp mt-2' data-k='${k}' inputmode='${num?'numeric':'text'}' placeholder='${ph}' value='${esc(dg[k]||'')}' oninput='dgIn(this)'>`;
+const tagsHTML=r=>r.tags&&r.tags.length?`<div class='flex flex-wrap gap-1.5 mt-2'>${r.tags.map(t=>`<span class='text-[11px] font-bold px-2 py-1 rounded-full' style='background:rgba(16,185,129,.14);color:var(--em);border:1px solid rgba(16,185,129,.35)'>${t}</span>`).join('')}</div>`:'';
+function dgSet(b){const k=b.dataset.k,v=b.dataset.v;dg[k]=(dg[k]===v&&k!=='m'&&k!=='s')?'':v;render()}
+function dgIn(el){const k=el.dataset.k;if(k==='fx')el.value=fmt(el.value.replace(/\D/g,''));dg[k]=el.value}
+function digMissing(){return cat.includes('Instagram')?(dg.f||dg.fx?'':'Obunachilar sonini tanlang yoki kiriting'):(dg.g?'':'O‘yin turini tanlang')}
+function digTags(){const t=cat.includes('Instagram')?[dg.fx||dg.f?'👥 '+(dg.fx||dg.f)+' obunachi':'',dg.a,dg.y?'🎯 '+dg.y:'',dg.m]:[dg.g?'🎮 '+dg.g:'',dg.l,dg.lx?'📝 '+dg.lx:'',dg.s];return t.filter(Boolean).map(esc)}
+function digFields(){const ig=cat.includes('Instagram');
+const body=ig?sec('Obunachilar soni','f',DG.ig.f,dinp('fx','Aniq son (ixtiyoriy), masalan: 34 500',1))+sec('Aktivlik darajasi','a',DG.ig.a)+sec('Yo‘nalishi','y',DG.ig.y)+sec('Birinchi pochta','m',DG.ig.m)
+:sec('O‘yin turi','g',DG.gm.g)+sec('Daraja / Inventar','l',DG.gm.l,dinp('lx','Aniq tafsilot (ixtiyoriy): Lednik 4 lvl, 65 LVL'))+sec('Xavfsizlik (Privyazka)','s',DG.gm.s);
+return body+`<div><div class='text-[11px] font-bold' style='color:var(--mut)'>Sotuvchilarga shunday ko‘rinadi:</div>${tagsHTML({tags:digTags()})}</div>`}
+const isDig=()=>/Instagram|O‘yin/.test(cat);
+const digSum=()=>cat.includes('Instagram')?'Instagram / Telegram':'O‘yin akkaunti';
+const digSumOld=()=>(cat.includes('Instagram')?'Obunachi: ':'LVL: ')+esc(dsub.trim())+' • Birinchi pochta: '+fmail;
+function digFieldsOld(){const ig=cat.includes('Instagram');return `<div><label class='text-xs font-bold' style='color:var(--mut)'>${ig?'Obunachilar soni':'O‘yin darajasi (LVL)'}</label><input class='inp mt-1' inputmode='numeric' placeholder='${ig?'Masalan: 50 000':'Masalan: 60'}' value='${esc(dsub)}' oninput='dsub=this.value'></div><div><label class='text-xs font-bold' style='color:var(--mut)'>Birinchi pochta bormi?</label><div class='flex gap-2 mt-1'>${['Ha','Yo‘q'].map(c=>`<button class='pill flex-1 ${c===fmail?'on':''}' data-v='${c}' onclick='fmail=this.dataset.v;render()'>${c}</button>`).join('')}</div></div>`}
+function pickCat(c){cat=c;prodTxt='';dgReset();render()}
+function pickImg(inp){const f=inp.files[0];if(!f)return;const fr=new FileReader();fr.onload=()=>{const im=new Image();im.onload=()=>{const k=Math.min(1,600/Math.max(im.width,im.height)),c=document.createElement('canvas');c.width=im.width*k;c.height=im.height*k;c.getContext('2d').drawImage(im,0,0,c.width,c.height);img=c.toDataURL('image/jpeg',.8);render()};im.onerror=()=>toast('Rasm ochilmadi');im.src=fr.result};fr.readAsDataURL(f)}
+function paintBal(){const e=$('bal');if(e)e.textContent='Balans: '+fmt(bal)+' so‘m'}
+function topUp(){bal+=50000;paintBal();toast('Hamyon to‘ldirildi: +50 000 so‘m')}
+function phoneHTML(r){return r.unlocked?`<div class="rounded-xl px-3 py-2.5 flex justify-between items-center" style="background:rgba(16,185,129,.12);border:1px solid var(--em)"><span class="text-xs font-bold" style="color:var(--mut)">Xaridor raqami</span><a href="tel:${r.phone.replace(/\s/g,'')}" class="font-extrabold" style="color:var(--em)">${r.phone}</a></div>`:`<button class="w-full rounded-xl py-2.5 text-sm font-extrabold" style="border:1px solid var(--gold);color:var(--gold)" onclick="unlock(${r.id})">🔓 Raqamni ochish (-5 000 so‘m)</button>`}
+function unlock(id){const r=R.find(x=>x.id===id);if(r.unlocked)return;if(bal<5000){toast('Balans yetarli emas – hamyonni to‘ldiring');return}bal-=5000;r.unlocked=true;$('ph'+id).innerHTML=phoneHTML(r);paintBal();toast('Raqam ochildi: -5 000 so‘m')}
+function openChat(id){chatBid=id;const r=R.find(x=>x.id===myId),x=r.bids.find(b=>b.id===id);
+$('modal').innerHTML=`<div class="modal" onclick="if(event.target===this)closeM()"><div class="sheet" style="height:80vh;display:flex;flex-direction:column;padding-top:20px">
+<div class="flex justify-between items-center mb-3"><div><div class="font-extrabold">${x.shop}</div><div class="text-xs font-bold" style="color:var(--em)">● onlayn • ${fmt(x.price)} so‘m</div></div><button class="text-2xl px-2" onclick="closeM()">✕</button></div>
+<div id="msgs" class="flex-1 overflow-y-auto space-y-2"></div>
+<div class="flex gap-2 overflow-x-auto noscroll my-3">${QUICK.map(q=>`<button class="pill" onclick="sendMsg('${q}')">${q}</button>`).join('')}</div>
+<div class="flex gap-2"><input id="cin" class="inp" placeholder="Savolingizni yozing…" onkeydown="if(event.key==='Enter')sendMsg()"><button class="rounded-xl px-5 font-extrabold" style="background:var(--em);color:#04130d" onclick="sendMsg()">➤</button></div></div></div>`;paintMsgs()}
+function paintMsgs(){const r=R.find(x=>x.id===myId),m=$('msgs');if(!r||!m)return;const L=r.chats[chatBid]||[];
+m.innerHTML=L.length?L.map((c,i)=>`<div class="flex ${c.f==='b'?'justify-end':''}"><div class="max-w-[80%] px-3 py-2 rounded-2xl text-sm ${i===L.length-1?'pop':''}" style="background:${c.f==='b'?'var(--em)':'var(--card2)'};color:${c.f==='b'?'#04130d':'var(--txt)'}">${c.t}</div></div>`).join(''):'<p class="text-center text-sm mt-6" style="color:var(--mut)">Savol bering – kelishishdan oldin tafsilotlarni aniqlang.</p>';m.scrollTop=m.scrollHeight}
+function sendMsg(t){const i=$('cin');if(!i)return;t=(t||i.value).trim();if(!t)return;i.value='';const r=R.find(x=>x.id===myId),id=chatBid;(r.chats[id]=r.chats[id]||[]).push({f:'b',t:esc(t)});paintMsgs();refreshRoom();
+const l=t.toLowerCase(),a=/kafolat/.test(l)?'12 oy rasmiy kafolat beramiz ✅':/yetkaz/.test(l)?'Ha, bugun 2–3 soat ichida yetkazamiz 🚚':/narx|tush/.test(l)?'Siz uchun yana 2% chegirma qila olamiz 🤝':/nasiya|oy/.test(l)?'Nasiya 6, 12 yoki 24 oyga rasmiylashtiriladi.':'Savolingiz uchun rahmat! Mahsulot omborda mavjud.';
+setTimeout(()=>{r.chats[id].push({f:'s',t:a});if(chatBid===id&&$('msgs'))paintMsgs();refreshRoom()},1100)}
+function startAuction(){
+  const t=$('prod').value.trim();
+  if(!t){toast('Mahsulot nomini kiriting');return}
+  if(isDig()){const m=digMissing();if(m){toast(m);return}}
+  city=$('city').value;
+  const r=mk(t,city,isDig()?digSum():cond,CATS[cat][1],15,true);r.urg=urg;r.img=img;r.tags=isDig()?digTags():[];r.dig=isDig();img=null;prodTxt='';dgReset();myId=r.id;render();
+  setTimeout(()=>{ if(role==='b'&&myId===r.id&&left(r)>0){simBid(r);refreshRoom()} },1200);
+}
+function roomHTML(r){
+  return `
+  <div class="card p-4 mb-4" style="background:linear-gradient(160deg,#16213a,#10281f)">
+    <div class="flex justify-between items-start gap-3">
+      <div><div class="text-xs font-bold" style="color:var(--mut)">${r.city} • ${r.cond}</div>
+      <div class="font-extrabold text-lg leading-snug mt-0.5">${r.title}</div><span class="tag mt-2 inline-block" style="background:rgba(245,158,11,.15);color:var(--gold)">${r.urg}</span></div>${r.img?`<img src="${r.img}" alt="" class="w-16 h-16 rounded-xl object-cover shrink-0">`:''}
+      <div class="text-right shrink-0"><div class="text-[11px] font-bold" style="color:var(--mut)">Qolgan vaqt</div>
+      <div class="disp text-2xl font-extrabold" style="color:var(--gold)" data-t="${r.id}">${clock(left(r))}</div></div>
+    </div>
+    ${tagsHTML(r)}<div class="flex justify-between items-center mt-3 text-sm"><span style="color:var(--mut)"><span id="cnt">0</span> ta taklif</span>
+    <button class="text-xs font-bold underline" style="color:var(--mut)" onclick="myId=null;render()">Yangi auksion</button></div>
+  </div>
+  <div id="bids" class="space-y-3"></div>`;
+}
+function refreshRoom(){
+  const r=R.find(x=>x.id===myId);const box=$('bids');if(!r||!box||role!=='b')return;
+  $('cnt').textContent=r.bids.length;
+  if(!r.bids.length){box.innerHTML=`<div class="card p-6 text-center text-sm" style="color:var(--mut)"><div class="live mx-auto mb-3"></div>Do‘konlardan takliflar kutilmoqda…</div>`;return}
+  const b=best(r),sorted=[...r.bids].sort((x,y)=>x.price-y.price);
+  box.innerHTML=sorted.map(x=>{
+    const top=x.price===b, over=left(r)===0;
+    return `<div class="card p-4 ${top?'best':''} ${x.id===lastNew?'pop':''}">
+      <div class="flex justify-between items-start">
+        <div><div class="font-extrabold flex items-center gap-1.5"><button class="underline decoration-dotted" onclick="pubP(${NAMES.indexOf(x.shop)})">${x.shop}</button>
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="#10b981"><path d="M12 2l2.4 2 3.1-.2 1 3 2.7 1.6-.9 3 .9 3-2.7 1.6-1 3-3.1-.2L12 22l-2.4-2-3.1.2-1-3L2.8 15.6l.9-3-.9-3 2.7-1.6 1-3 3.1.2z"/><path d="M8 12l3 3 5-6" stroke="#04130d" stroke-width="2" fill="none"/></svg></div>
+        <span class="tag mt-1 inline-block">${x.bonus}</span><div class="text-[11px] font-bold mt-1.5" style="color:var(--gold)">${trust(x.shop)}</div>${vtag(x.shop)}</div>
+        ${top?'<span class="text-[11px] font-extrabold px-2 py-1 rounded-full" style="background:var(--gold);color:#1a1100">ENG ARZON</span>':''}
+      </div>
+      <div class="flex items-end justify-between mt-3">
+        <div><div class="disp text-xl font-extrabold" style="color:${top?'var(--gold)':'var(--txt)'}">${fmt(x.price)} <span class="text-xs">so‘m</span></div>
+        <div class="text-xs" style="color:var(--mut)">Naqd narx • ${usd(x.price)}</div></div>
+      </div>
+      ${x.inst&&!r.dig?`<div class="mt-3 rounded-xl px-3 py-2 text-sm flex justify-between" style="background:var(--card2)"><span style="color:var(--mut)">Nasiya • ${x.inst.m} oy</span><b>${fmt(x.inst.pay)} so‘m/oy</b></div>`:''}
+      <div class="flex gap-2 mt-3"><button class="flex-1 rounded-xl py-2.5 text-sm font-extrabold" style="border:1px solid var(--line)" onclick="openChat(${x.id})">💬 Savol berish${(r.chats[x.id]||[]).length?' ('+r.chats[x.id].length+')':''}</button>
+      <button class="rounded-xl py-2.5 text-sm font-extrabold" style="flex:1.5;background:${top?'var(--em)':'var(--card2)'};color:${top?'#04130d':'var(--txt)'}" onclick="choose(${x.id})">🛡️ Xavfsiz bitim</button></div></div>`}).join('');
+  lastNew=null;
+}
+const kycOk=()=>!!user&&user.kyc==='ok';
+const vtag=n=>n===ME[0]&&!kycOk()?`<div class='text-[11px] font-bold mt-1' style='color:#f87171'>⚠️ Tasdiqlanmagan</div>`:`<div class='text-[11px] font-bold mt-1' style='color:var(--em);text-shadow:0 0 10px rgba(16,185,129,.6)'>✅ Shaxsi tasdiqlangan</div>`;
+const bvt=r=>(r.mine?kycOk():r.id%2===0)?`<div class='text-[11px] font-bold mt-1' style='color:var(--em)'>✅ Tasdiqlangan xaridor</div>`:'';
+const kycTag=()=>kycOk()?`<span class='text-[11px] font-extrabold px-2 py-1 rounded-full inline-block glow' style='background:rgba(16,185,129,.18);color:var(--em)'>✅ Shaxsi tasdiqlangan</span>`:`<button class='text-[11px] font-extrabold px-2 py-1 rounded-full' style='background:rgba(248,113,113,.15);color:#f87171' onclick='openKYC()'>⚠️ Tasdiqlanmagan • Tasdiqlash</button>`;
+function fmtIn(el){el.value=fmt(el.value.replace(/\D/g,''))}
+function fmtDig(el){el.value=el.value.replace(/\D/g,'')}
+function fmtCard(el){el.value=el.value.replace(/\D/g,'').slice(0,16).replace(/(\d{4})(?=\d)/g,'$1 ')}
+function fmtPh(el){const d=el.value.replace(/\D/g,'').slice(0,9);el.value=d.replace(/^(\d{2})(\d{0,3})(\d{0,2})(\d{0,2}).*/,(m,a,b,c,e)=>[a,b,c,e].filter(Boolean).join(' '))}
+function fmtPass(el){const v=el.value.toUpperCase().replace(/[^A-Z0-9]/g,''),l=v.slice(0,2).replace(/[^A-Z]/g,''),d=v.slice(2).replace(/\D/g,'').slice(0,7);el.value=l+(d?' ':'')+d}
+function paintPB(){const e=$('pbtn');if(!e)return;const ok=kycOk(),n=user?user.name:'Mehmon',real=user&&!user.guest;e.style.borderColor=ok?'#10b981':'#273556';e.style.boxShadow=ok?'0 0 14px rgba(16,185,129,.5)':'none';e.innerHTML=`<span class='w-7 h-7 rounded-full flex items-center justify-center font-extrabold' style='background:${ok?'var(--em)':'var(--card2)'};color:${ok?'#04130d':'var(--txt)'}'>${real?esc(n[0]):'👤'}</span><span>${ok?'✅ Tasdiqlangan':real?'Profil':'Kirish'}</span>`}
+/* ---- AUTH ---- */
+function showAuth(){authStep='menu';paintAuth()}
+function authGo(s){authStep=s;paintAuth()}
+function authTg(){unavail('Telegram')}
+function authBot(){authGo('tgbot')}
+function authBack(){authGo('menu')}
+function tgConfirm(){authGo('tgok');setTimeout(()=>loginUser({name:'Dilshod Karimov',contact:'@dilshod_k • Telegram',kyc:'none'}),1000)}
+function paintAuth(){$('authwrap').innerHTML=`<div class='fixed inset-0 overflow-y-auto' style='z-index:55;background:radial-gradient(circle at 50% 0%,#12304a 0%,var(--bg) 55%)'><div class='max-w-[440px] mx-auto px-6 min-h-full flex flex-col justify-center py-10' style='padding-top:calc(40px + env(safe-area-inset-top,0px))'>${authHTML()}</div></div>`;const c=$('cd');if(c)c.focus()}
+function authHTML(){
+if(authStep==='load')return `<div class='text-center'><div class='live mx-auto mb-4' style='width:14px;height:14px'></div><div class='font-bold'>Hisobga ulanmoqda…</div></div>`;
+if(authStep==='na')return naHTML();
+if(authStep==='tg')return `<button class='text-3xl self-start mb-4' onclick='authBack()'>‹</button><h2 class='disp text-2xl font-extrabold'>Telegram orqali kirish</h2><p class='text-sm mt-2' style='color:var(--mut)'>Parol ham, SMS kod ham kerak emas. Telegram bot sizni bir zumda tasdiqlaydi.</p><div class='card p-4 mt-6 space-y-3'><div class='flex gap-3 items-start'><span class='text-xl'>⚡</span><div><b>Zumda</b><div class='text-xs' style='color:var(--mut)'>Bot bir soniyada javob beradi – SMS kutish yo‘q.</div></div></div><div class='flex gap-3 items-start'><span class='text-xl'>🆓</span><div><b>Bepul</b><div class='text-xs' style='color:var(--mut)'>Pullik SMS xizmati ishlatilmaydi.</div></div></div><div class='flex gap-3 items-start'><span class='text-xl'>🔐</span><div><b>Xavfsiz</b><div class='text-xs' style='color:var(--mut)'>Telegram akkauntingiz orqali tasdiqlanadi.</div></div></div></div><button class='btn glow disp mt-5' style='background:linear-gradient(135deg,#2aabee,#1c8adb);color:#fff' onclick='authBot()'>📲 Telegram’ni ochish</button>`;
+if(authStep==='tgbot')return `<button class='text-3xl self-start mb-4' onclick='authGo("tg")'>‹</button><div class='card overflow-hidden' style='border-radius:22px'><div class='flex items-center gap-3 p-3' style='background:#17212b'><div class='w-10 h-10 rounded-full flex items-center justify-center font-extrabold' style='background:#2aabee;color:#fff'>K</div><div><div class='font-extrabold text-sm'>KimArzon Bot <span style='color:#2aabee'>✔</span></div><div class='text-[11px]' style='color:var(--mut)'>bot • onlayn</div></div></div><div class='p-4 space-y-3' style='background:#0e1621'><div class='rounded-2xl px-3 py-2 text-sm' style='background:#182533;max-width:88%'>Salom! 👋 KIM ARZON? ga kirish so‘rovi keldi. Bu siz bo‘lsangiz, tugmani bosing.</div><button class='w-full rounded-xl py-3 text-sm font-extrabold' style='background:#2b5278;color:#fff' onclick='tgConfirm()'>✅ Kirishni tasdiqlash</button></div></div><p class='text-[11px] text-center mt-4' style='color:var(--mut)'>Demo: haqiqiy ilovada shu tugma Telegram botda chiqadi va akkauntingiz avtomatik tasdiqlanadi.</p>`;
+if(authStep==='tgok')return `<div class='text-center'><div class='w-20 h-20 mx-auto rounded-full flex items-center justify-center glow text-4xl' style='background:#2aabee'>✅</div><div class='font-extrabold text-lg mt-4'>Telegram orqali tasdiqlandi</div><div class='text-xs mt-1' style='color:var(--mut)'>0.8 soniya • SMS kerak bo‘lmadi</div></div>`;
+if(authStep==='phone')return `<button class='text-3xl self-start mb-4' onclick='authGo("menu")'>‹</button><h2 class='disp text-2xl font-extrabold'>Telefon raqamingiz</h2><p class='text-sm mt-2' style='color:var(--mut)'>SMS orqali 4 xonali kod yuboramiz.</p><div class='flex gap-2 mt-6'><div class='inp font-extrabold' style='width:98px;display:flex;align-items:center;justify-content:center'>🇺🇿 +998</div><input id='ph' class='inp' inputmode='numeric' placeholder='90 123 45 67' oninput='fmtPh(this)'></div><button class='btn glow disp mt-5' onclick='sendCode()'>Kod yuborish</button>`;
+if(authStep==='code')return `<button class='text-3xl self-start mb-4' onclick='authGo("phone")'>‹</button><h2 class='disp text-2xl font-extrabold'>SMS kodni kiriting</h2><p class='text-sm mt-2' style='color:var(--mut)'>+998 ${aph} raqamiga yuborildi.</p><input id='cd' class='inp text-center disp mt-6' style='font-size:32px;letter-spacing:.6em;padding-left:.6em' maxlength='4' inputmode='numeric' placeholder='••••' oninput='codeIn(this)'><div class='card p-3 mt-4 text-sm text-center' style='border-color:var(--gold);color:var(--gold)'>💬 Demo SMS kod: <b>${smsCode}</b></div><button class='btn mt-5' onclick='checkCode()'>Tasdiqlash</button><button class='text-sm font-bold mt-4' style='color:var(--mut)' onclick='sendCode()'>Kodni qayta yuborish</button>`;
+return `<div class='text-center'><div class='disp text-3xl font-extrabold'>KIM <span style='color:var(--em)'>ARZON?</span></div><p class='text-sm mt-3' style='color:var(--mut)'>Siz so‘raysiz – sotuvchilar bir-biridan arzon narx taklif qiladi.</p></div>
+<div class='space-y-3 mt-10'><button class='w-full rounded-2xl py-4 font-extrabold flex items-center justify-center gap-3 glow' style='background:linear-gradient(135deg,#2aabee,#1c8adb);color:#fff' onclick='authTg()'>📲 Telegram orqali 1-klikda kirish</button><div class='text-[11px] font-bold text-center' style='color:var(--em)'>⚡ Bepul • SMS kutish yo‘q • Bot orqali zumda tasdiqlanadi</div><button class='w-full rounded-2xl py-3.5 font-extrabold border' style='border-color:var(--line)' onclick='authPh()'>📞 Telefon raqam orqali (SMS)</button><button class='w-full rounded-2xl py-3.5 font-extrabold flex items-center justify-center gap-3' style='background:#fff;color:#1f2937' onclick='loginG()'><b style='color:#4285f4;font-size:18px'>G</b> Google (Gmail) orqali kirish</button>
+<button class='w-full rounded-2xl py-3.5 font-extrabold flex items-center justify-center gap-3' style='background:#000;border:1px solid #3a3f4b;color:#fff' onclick='loginA()'><b style='font-size:18px'></b> Apple (iCloud) orqali kirish</button>
+</div>
+<button class='w-full mt-6 py-2 text-sm font-bold' style='color:var(--mut)' onclick='skipAuth()'>Mehmon sifatida ko‘rish (Skip)</button>${LIVE?'':`<button class='w-full text-[11px] font-bold mt-1 py-1' style='color:var(--mut)' onclick='testLogin()'>Test akkaunt bilan kirish</button>`}
+<p class='text-[11px] text-center mt-6' style='color:var(--mut)'>🛡️ Davom etish orqali foydalanish shartlariga rozilik bildirasiz. Ma’lumotlaringiz himoyalangan.</p>`}
+function loginUser(u){u.id=u.id||'u'+Math.random().toString(36).slice(2,8);u.joined=u.joined||Date.now();u.un=u.un||(u.name||'user').toLowerCase().replace(/[^a-z0-9]/g,'')+Math.floor(rnd(10,99));user=u;$('authwrap').innerHTML='';paintPB();render();toast(u.guest?'Mehmon rejimi: asosiy funksiyalarni ko‘rib chiqing':'Xush kelibsiz, '+u.name+' 👋')}
+function loginGOld(){authStep='load';paintAuth();setTimeout(()=>loginUser({name:'Dilshod Karimov',contact:'dilshod.k@gmail.com',kyc:'none'}),900)}
+function loginAOld(){authStep='load';paintAuth();setTimeout(()=>loginUser({name:'Dilshod Karimov',contact:'d.karimov@icloud.com',kyc:'none'}),900)}
+function skipAuth(){loginUser({guest:true,name:'Mehmon',kyc:'none'})}
+function sendCode(){if(authStep==='code'&&Date.now()-smsLast<30000){toast('Qayta yuborish uchun '+Math.ceil((30000-(Date.now()-smsLast))/1000)+' soniya kuting');return}const el=$('ph');if(el){if(el.value.replace(/\D/g,'').length!==9){toast('Raqamni to‘liq kiriting (9 ta raqam)');return}aph=el.value}smsCode=String(Math.floor(1000+Math.random()*9000));smsExp=Date.now()+120000;smsLast=Date.now();authStep='code';paintAuth();toast('SMS yuborildi: kod '+smsCode)}
+function codeIn(el){fmtDig(el);if(el.value.length===4)checkCode()}
+function checkCode(){const c=$('cd');if(!c)return;if(Date.now()>smsExp){toast('Kod muddati tugadi. Qayta yuboring');c.value='';return}if(c.value!==smsCode){toast('Kod noto‘g‘ri. Qayta urinib ko‘ring');c.value='';return}loginUser({name:'Foydalanuvchi',contact:'+998 '+aph,kyc:'none'})}
+function logout(){if(sb)sb.auth.signOut();user=null;closeM();paintPB();render();showAuth()}
+/* ---- PROFILE / KYC ---- */
+function openProfile(){if(!user){showAuth();return}if(!user.guest){openDash();return}const g=user.guest,ok=kycOk();
+$('modal').innerHTML=`<div class='modal' onclick='if(event.target===this)closeM()'><div class='sheet' style='max-height:90vh;overflow-y:auto'>
+<div class='flex items-center gap-4'><div class='w-16 h-16 rounded-full flex items-center justify-center disp text-2xl font-extrabold ${ok?'glow':''}' style='background:${ok?'var(--em)':'var(--card2)'};color:${ok?'#04130d':'var(--txt)'}'>${g?'👤':esc(user.name[0])}</div><div><div class='font-extrabold text-lg'>${esc(user.name)}</div><div class='text-xs' style='color:var(--mut)'>${g?'Mehmon rejimi':esc(user.contact)}</div></div></div>
+${g?`<div class='card p-4 mt-5 text-sm' style='color:var(--mut)'>Pul yechish, Xavfsiz bitim va verifikatsiya uchun ro‘yxatdan o‘tish kerak.</div><button class='btn glow mt-4' onclick='closeM();showAuth()'>Kirish / Ro‘yxatdan o‘tish</button>`:ok?`<div class='card p-4 mt-5 glow' style='border-color:var(--em);background:rgba(16,185,129,.1)'><div class='font-extrabold' style='color:var(--em)'>✅ Shaxsi tasdiqlangan (Verified Seller/Buyer)</div><div class='text-xs mt-2' style='color:var(--mut)'>Pasport: ${user.pass} • JSHSHIR tekshirilgan</div></div>`:`<div class='card p-4 mt-5' style='border-color:#f87171'><div class='font-extrabold'>⚠️ Shaxsi tasdiqlanmagan</div><p class='text-xs mt-1' style='color:var(--mut)'>Pul yechish qulflangan. Pasport va selfi orqali tasdiqlang.</p></div><button class='btn glow disp mt-4' onclick='openKYC()'>🛡️ Shaxsni tasdiqlash (Verifikatsiya)</button>`}
+<div class='card p-4 mt-4'><div class='text-xs font-bold' style='color:var(--mut)'>Xavfsiz bitimlardagi ishonch</div><div class='flex items-center gap-3 mt-2'><div class='flex-1 h-2.5 rounded-full' style='background:var(--card2)'><div class='h-full rounded-full' style='width:${ok?100:33}%;background:${ok?'var(--em)':'var(--gold)'}'></div></div><b class='disp'>${ok?'3x':'1x'}</b></div><p class='text-xs mt-2' style='color:var(--mut)'>Tasdiqlangan foydalanuvchilar Xavfsiz bitimlarda 3 barobar ko‘proq ishonch va tezroq kelishuv oladi.</p></div>
+${g?'':`<button class='w-full mt-4 text-sm font-bold' style='color:#f87171' onclick='logout()'>Chiqish</button>`}</div></div>`}
+function openKYC(){if(!user||user.guest){closeM();showAuth();toast('Avval ro‘yxatdan o‘ting');return}kd={doc:0,selfie:0};
+$('modal').innerHTML=`<div class='modal' onclick='if(event.target===this)closeM()'><div class='sheet' id='ksheet' style='max-height:92vh;overflow-y:auto'>
+<div class='flex justify-between items-center'><h2 class='disp font-extrabold text-lg'>🛡️ Shaxsni tasdiqlash</h2><button class='text-2xl px-2' onclick='closeM()'>✕</button></div>
+<p class='text-xs mt-2' style='color:var(--mut)'>Ma’lumotlar shifrlanadi va faqat tekshiruv uchun ishlatiladi.</p>
+<label class='text-xs font-bold block mt-4' style='color:var(--mut)'>Pasport seriyasi va raqami</label><input id='kp' class='inp mt-1' placeholder='AD 1234567' maxlength='10' oninput='fmtPass(this)'>
+<label class='text-xs font-bold block mt-3' style='color:var(--mut)'>JSHSHIR (PINFL)</label><input id='kn' class='inp mt-1' inputmode='numeric' maxlength='14' placeholder='14 xonali raqam' oninput='fmtDig(this)'>
+<div class='grid grid-cols-2 gap-3 mt-4'><button id='kb0' class='card p-4 text-sm font-bold' onclick='scan(0)'><span class='text-2xl'>🪪</span><br>Pasport rasmi</button><button id='kb1' class='card p-4 text-sm font-bold' onclick='scan(1)'><span class='text-2xl'>🤳</span><br>Selfi tekshiruvi</button></div>
+<button class='btn glow disp mt-5' onclick='kycGo()'>Tekshiruvga yuborish</button></div></div>`}
+function scan(i){const k=i?'selfie':'doc',b=$('kb'+i);if(kd[k]===1||!b)return;kd[k]=1;b.innerHTML=`<div class='live mx-auto mb-2'></div>Skanerlanmoqda…`;setTimeout(()=>{const e=$('kb'+i);if(!e)return;kd[k]=2;e.style.borderColor='#10b981';e.style.boxShadow='0 0 14px rgba(16,185,129,.4)';e.innerHTML=`<span class='text-2xl'>✅</span><br>Tayyor`},1200)}
+function kycGo(){const pass=$('kp').value.toUpperCase().replace(/\s/g,''),pin=$('kn').value;
+if(!/^[A-Z]{2}\d{7}$/.test(pass)){toast('Pasport formati: AD 1234567');return}
+if(!/^\d{14}$/.test(pin)){toast('JSHSHIR 14 ta raqamdan iborat bo‘lishi kerak');return}
+if(kd.doc!==2||kd.selfie!==2){toast('Pasport va selfi tekshiruvini bajaring');return}
+$('ksheet').innerHTML=`<div class='text-center py-6'><div class='text-5xl'>🔍</div><h2 class='disp font-extrabold text-lg mt-3'>Tekshirilmoqda</h2><div id='kst' class='text-sm mt-3' style='color:var(--mut)'>Boshlanmoqda…</div><div class='h-2 rounded-full mt-5' style='background:var(--card2)'><div id='kbar' class='h-full rounded-full' style='width:0;background:var(--em);transition:width .7s'></div></div></div>`;
+['Pasport ma’lumotlari o‘qilmoqda…','Yuz selfi bilan solishtirilmoqda…','JSHSHIR davlat reyestrida tekshirilmoqda…'].forEach((t,i)=>setTimeout(()=>{const a=$('kst'),b=$('kbar');if(a)a.textContent=t;if(b)b.style.width=((i+1)*33)+'%'},i*900));
+setTimeout(()=>{user.kyc=user.test?'ok':'pending';user.kycAt=Date.now();user.pass=pass.slice(0,2)+' •••• '+pass.slice(-3);paintPB();render();const s=$('ksheet');if(s)s.innerHTML=`<div class='text-center py-4 pop'><div class='w-20 h-20 mx-auto rounded-full flex items-center justify-center glow text-4xl' style='background:var(--em)'>✅</div><h2 class='disp font-extrabold text-xl mt-4'>${user.kyc==='ok'?'Shaxsi tasdiqlangan!':'Ariza qabul qilindi'}</h2><p class='text-sm mt-2' style='color:var(--mut)'>${user.kyc==='ok'?'Profilingiz va takliflaringizda yashil belgi ko‘rinadi.':'Hujjatlaringiz tekshiruvga yuborildi. Tasdiqlangach, belgi paydo bo‘ladi.'}</p><button class='btn mt-5' onclick='closeM()'>Ajoyib</button></div>`},3100)}
+/* ---- WALLET LOCK ---- */
+function lockModal(t,btn,fn){$('modal').innerHTML=`<div class='modal' onclick='if(event.target===this)closeM()'><div class='sheet text-center'><div class='text-5xl'>🔒</div><h2 class='disp font-extrabold text-xl mt-3'>Xavfsizlik qulfi</h2><p class='text-sm mt-2' style='color:var(--mut)'>${t}</p><button class='btn glow mt-5' onclick='${fn}'>${btn}</button><button class='mt-3 text-sm font-bold' style='color:var(--mut)' onclick='closeM()'>Keyinroq</button></div></div>`}
+function withdraw(){if(!user||user.guest){lockModal('Pul yechish uchun avval ro‘yxatdan o‘ting.','Kirish / Ro‘yxatdan o‘tish','closeM();showAuth()');return}
+if(!kycOk()){lockModal('Hamyondan pul yechish faqat shaxsi tasdiqlangan foydalanuvchilar uchun ochiladi. Bu sizni firibgarlikdan himoya qiladi.','🛡️ Shaxsni tasdiqlash','openKYC()');return}
+$('modal').innerHTML=`<div class='modal' onclick='if(event.target===this)closeM()'><div class='sheet'><h2 class='disp font-extrabold text-lg'>💸 Hamyondan yechish</h2><div class='text-sm mt-1' style='color:var(--mut)'>Mavjud: ${fmt(bal)} so‘m</div><input id='wa' class='inp mt-4' inputmode='numeric' value='${fmt(bal)}' oninput='fmtIn(this)'><input id='wc' class='inp mt-2' inputmode='numeric' placeholder='Karta raqami (Uzcard / Humo)' oninput='fmtCard(this)'><button class='btn glow disp mt-4' onclick='doWd()'>Yechib olish</button></div></div>`}
+function doWd(){const a=parseInt($('wa').value.replace(/\D/g,''))||0,c=$('wc').value.replace(/\D/g,'');
+if(a<10000){toast('Minimal summa: 10 000 so‘m');return}if(a>bal){toast('Balans yetarli emas');return}if(c.length!==16){toast('Karta raqami 16 ta raqam');return}
+bal-=a;paintBal();$('modal').innerHTML=`<div class='modal' onclick='if(event.target===this)closeM()'><div class='sheet text-center'><div class='w-16 h-16 mx-auto rounded-full flex items-center justify-center glow text-3xl' style='background:var(--em)'>✅</div><h2 class='disp font-extrabold text-xl mt-4'>So‘rov qabul qilindi</h2><p class='text-sm mt-2' style='color:var(--mut)'>${fmt(a)} so‘m •••• ${c.slice(-4)} kartaga o‘tkaziladi.</p><button class='btn mt-5' onclick='closeM()'>Yopish</button></div></div>`}
+const newTx=()=>'KA-'+new Date().getFullYear()+'-'+Math.random().toString(36).slice(2,8).toUpperCase();
+const dstat=d=>d.refunded?'↩️ Qaytarildi':d.cancelled?'✖️ Bekor qilindi':d.disp?'⚠️ Nizoda':['⏳ To‘lov kutilmoqda','🔒 To‘lov himoyalandi • Sotuvchi kutilmoqda','📦 Akkaunt topshirildi • Xaridor tasdig‘i kutilmoqda','✅ Yakunlandi'][d.step];
+const REGIONS=REG.map(n=>({name:n,districts:[]}));
+const nrm=s=>s.toLowerCase().replace(/[‘’'`ʻ]/g,'');
+function openRegion(){$('modal').innerHTML=`<div class='modal' onclick='if(event.target===this)closeM()'><div class='sheet' style='height:80vh;display:flex;flex-direction:column;padding-top:20px'><div class='flex justify-between items-center mb-3'><h2 class='disp font-extrabold text-lg'>📍 Hududni tanlang</h2><button class='text-2xl px-2' onclick='closeM()'>✕</button></div><input id='rs' class='inp' placeholder='🔎 Viloyat nomini yozing…' oninput='regList()'><div id='rl' class='flex-1 overflow-y-auto mt-3 space-y-2'></div></div></div>`;regList()}
+function regList(){const q=nrm($('rs')?$('rs').value:''),L=REGIONS.map((r,i)=>[r,i]).filter(([r])=>nrm(r.name).includes(q));$('rl').innerHTML=L.length?L.map(([r,i])=>`<button class='w-full text-left rounded-xl px-4 py-3 font-bold card' style='${r.name===city?'border-color:var(--em);color:var(--em)':''}' onclick='setReg(${i})'>${r.name}</button>`).join(''):`<p class='text-center text-sm mt-6' style='color:var(--mut)'>Hudud topilmadi</p>`}
+function setReg(i){city=REGIONS[i].name;closeM();render()}
+let buyTab='a', mkCat='Hammasi', mkQ='';
+const ON='🌐 Onlayn (Butun O‘zbekiston)';
+const DIGI=[{id:1,t:'Instagram',title:'Biznes sahifa • moda',price:2800000,seller:'SocialPro UZ',tags:['👥 34 500 obunachi','🔥 Yuqori (Tirik)','🎯 Biznes','✅ Birinchi pochta bor']},{id:2,t:'Telegram',title:'Yangiliklar kanali',price:4900000,seller:'TechHub UZ',tags:['👥 52 000 obunachi','📊 O‘rtacha','🎯 Yangiliklar','✅ Birinchi pochta bor']},{id:3,t:'O‘yin',title:'PUBG Mobile • Conqueror',price:1000000,seller:'GameVault UZ',tags:['🎮 PUBG Mobile','🏆 Top Rank','📝 Conqueror, 65 LVL','🛡️ Toza (1 ta pochta)']},{id:4,t:'O‘yin',title:'Mobile Legends • Mythic',price:650000,seller:'Grand Mobile',tags:['🎮 Mobile Legends','💎 Pro / Rare Skinlar','📝 Mythic, 120 skin','⚠️ Qo‘shimcha ulangan']},{id:5,t:'O‘yin',title:'CS2 / Steam • Prime',price:1900000,seller:'GameVault UZ',tags:['🎮 CS2 / Steam','💎 Pro / Rare Skinlar','🛡️ Toza (1 ta pochta)']},{id:6,t:'Instagram',title:'Ko‘ngilochar blog',price:1200000,seller:'Malika Store #12',tags:['👥 12 000 obunachi','💤 Past / Eski','🎯 Ko‘ngilochar','❌ Yo‘q']}];
+function setTab(n){buyTab=n?'m':'a';render()}
+function tabsHTML(){return `<div class='flex gap-2 mb-4'><button class='pill flex-1 ${buyTab==='a'?'on':''}' onclick='setTab(0)'>🔨 Auksion</button><button class='pill flex-1 ${buyTab==='m'?'on':''}' onclick='setTab(1)'>🛒 Raqamli bozor</button></div>`}
+const mkFilter=()=>DIGI.filter(x=>(mkCat==='Hammasi'||x.t===mkCat)&&nrm(x.title+' '+x.tags.join(' ')).includes(nrm(mkQ)));
+function mkSearch(el){mkQ=el.value;$('mklist').innerHTML=mkCards()}
+function mkCards(){const L=mkFilter();return L.length?L.map(x=>`<div class='card p-4'><div class='text-xs font-bold' style='color:var(--mut)'>${x.t==='Instagram'?'📸':x.t==='Telegram'?'✈️':'🎮'} ${x.t} • ${ON}</div><div class='font-extrabold mt-0.5 flex justify-between gap-2'>${x.title}<button onclick='fav(${x.id})'>${FAV.has(x.id)?'❤️':'🤍'}</button></div><div class='text-sm mt-1'><button class='underline decoration-dotted' onclick='pubP(${NAMES.indexOf(x.seller)})'>${x.seller}</button></div>${vtag(x.seller)}<div class='text-[11px] font-bold mt-1' style='color:var(--gold)'>${trust(x.seller)}</div>${tagsHTML({tags:x.tags})}<div class='flex items-end justify-between mt-3 gap-2'><div><div class='disp text-xl font-extrabold' style='color:var(--gold)'>${fmt(x.price)} <span class='text-xs'>so‘m</span></div><div class='text-xs' style='color:var(--mut)'>${usd(x.price)}</div></div><button class='rounded-xl px-4 py-2.5 text-sm font-extrabold' style='background:var(--em);color:#04130d' onclick='buyDigital(${x.id})'>🛡️ Garant bilan olish</button></div></div>`).join(''):`<div class='card p-6 text-center text-sm' style='color:var(--mut)'>Hech narsa topilmadi</div>`}
+function marketHTML(){const C=['Hammasi','Instagram','Telegram','O‘yin','Boshqa'];return `<h1 class='disp text-2xl font-extrabold leading-tight mb-1'>Raqamli bozor</h1><p class='text-sm mb-4' style='color:var(--mut)'>Akkauntlarni Garant himoyasi bilan sotib oling.</p><input class='inp mb-3' placeholder='🔎 Qidirish…' value='${esc(mkQ)}' oninput='mkSearch(this)'><div class='flex gap-2 overflow-x-auto noscroll -mx-5 px-5 mb-4'>${C.map(c=>`<button class='pill ${c===mkCat?'on':''}' data-v='${c}' onclick='mkCat=this.dataset.v;render()'>${c}</button>`).join('')}</div><div id='mklist' class='space-y-3'>${mkCards()}</div>`}
+function buyDigital(id){if(!user||user.guest){toast('Sotib olish uchun ro‘yxatdan o‘ting');showAuth();return}
+if(deal&&deal.step>0&&deal.step<3){dealView='b';openDeal();toast('Avval joriy bitimni yakunlang');return}
+const x=DIGI.find(d=>d.id===id);if(x.seller===ME[0]){toast('O‘z e’loningizni sotib ola olmaysiz');return}deal={rid:null,id,shop:x.seller,item:x.title,amount:x.price,step:0,disp:false,log:[],tx:newTx(),dig:true,mk:true};deal.owner=user.id;deal.created=Date.now();TXS.push(deal);logD('Buyurtma yaratildi: '+x.title);dealView='b';openDeal()}
+function pickPv(b){b.parentNode.querySelectorAll('.pill').forEach(x=>x.classList.remove('on'));b.classList.add('on')}
+function dealPay(){if(LIVE){toast('To‘lov tizimi hali ulanmagan. Tez orada!');return}if(deal.paying||deal.step>0)return;
+$('modal').innerHTML=`<div class='modal' onclick='if(event.target===this&&!deal.paying)closeM()'><div class='sheet'><div class='flex justify-between items-center'><h2 class='disp font-extrabold text-lg'>💳 Garant to‘lovi</h2><button class='text-2xl px-2' onclick='closeM()'>✕</button></div><div class='rounded-xl p-3 mt-3 text-xs font-bold' style='background:rgba(245,158,11,.12);border:1px solid var(--gold);color:var(--gold)'>DEMO REJIM: haqiqiy pul harakatlanmaydi. Real rejimda to‘lov provayder sahifasida bajariladi va faqat server webhook orqali tasdiqlanadi.</div><div class='card p-3 mt-3 text-sm space-y-1'><div class='flex justify-between gap-3'><span style='color:var(--mut)'>Buyurtma</span><b>${deal.item}</b></div><div class='flex justify-between'><span style='color:var(--mut)'>Tranzaksiya ID</span><b>${deal.tx}</b></div><div class='flex justify-between'><span style='color:var(--mut)'>To‘lov summasi</span><b style='color:var(--gold)'>${fmt(deal.amount)} so‘m</b></div></div><div class='grid grid-cols-2 gap-2 mt-3'>${['Payme','Click','Uzum Bank','Humo / Uzcard'].map((p,i)=>`<button class='pill ${i?'':'on'}' onclick='pickPv(this)'>${p}</button>`).join('')}</div><button id='paybtn' class='btn glow disp mt-4' onclick='payRun()'>Demo to‘lovni boshlash</button></div></div>`}
+function payRun(){if(!deal||deal.paying||deal.step>0)return;deal.paying=true;const b=$('paybtn');b.disabled=true;b.innerHTML=`<span class='live inline-block mr-2'></span>Provayderga yo‘naltirilmoqda…`;
+setTimeout(()=>{const e=$('paybtn');if(e)e.textContent='Webhook kutilmoqda…'},1200);
+setTimeout(()=>{if(!deal)return;logD('📨 Provayder webhook (demo): payment.succeeded');closeM();dealPayDone();toast('Sotuvchiga bildirishnoma yuborildi 🔔')},2400)}
+function adminRes(k){if(k===1){deal.disp=false;deal.refunded=true;deal.step=0;logD('↩️ Administrator: pul xaridorga qaytarildi (demo)');repaintDeal();toast('Qaytarildi (demo)')}else{deal.disp=false;logD('✅ Administrator: mablag‘ sotuvchiga chiqarildi (demo)');dealOk()}}
+function dealCancel(){deal.cancelled=true;logD('✖️ Buyurtma bekor qilindi');repaintDeal()}
+const TXS=[], FAV=new Set();
+let dashMode='b', revS=0, revT='';
+const NAMES=[...SHOPS.map(s=>s[0]),'SocialPro UZ','GameVault UZ',ME[0]];
+const PR={'Malika Store #12':{j:'2023-03-14',done:48,disp:1,canc:2,dly:2,n:41,sum:188,resp:'12 daq'},'TechHub UZ':{j:'2022-11-02',done:132,disp:2,canc:4,dly:3,n:97,sum:452,resp:'8 daq'},'Grand Mobile':{j:'2024-01-20',done:2,disp:0,canc:0,dly:0,n:2,sum:9,resp:'25 daq'},'Mega Texno':{j:'2025-06-09',done:0,disp:0,canc:0,dly:0,n:0,sum:0,resp:'—'},'SocialPro UZ':{j:'2024-08-15',done:31,disp:0,canc:1,dly:1,n:24,sum:115,resp:'15 daq'},'GameVault UZ':{j:'2023-09-30',done:19,disp:1,canc:2,dly:2,n:14,sum:60,resp:'20 daq'}};
+const SEEDRV=[[5,'Tez va ishonchli sotuvchi'],[5,'Hammasi kelishilganidek bo‘ldi'],[4,'Javob biroz sekin, lekin yaxshi']];
+const LV=[0,['🌱','Yangi foydalanuvchi','#8b9ab8'],['🛡️','Ishonchli','#10b981'],['🏆','Top sotuvchi','#f59e0b']];
+const lvB=l=>`<span class='text-[10px] font-extrabold px-2 py-0.5 rounded-full' style='background:${LV[l][2]}22;color:${LV[l][2]};border:1px solid ${LV[l][2]}66'>${LV[l][0]} ${LV[l][1]}</span>`;
+function rep(name){const b=PR[name]||{j:null,done:0,disp:0,canc:0,dly:0,n:0,sum:0,resp:'—'},mine=name===ME[0];let{done,disp,canc,dly,n,sum}=b;
+TXS.forEach(d=>{if(mine||d.shop===name){if(d.step===3&&!d.refunded)done++;if(d.dsp)disp++;if(d.cancelled)canc++}if(d.shop===name&&d.rev){n++;sum+=d.rev.s}});
+const tot=done+disp+canc,succ=tot?Math.round(done/tot*100):0,rating=n?Math.min(5,Math.max(1,(sum+17.5)/(n+5)-2*(disp+canc*.5+dly*.25)/Math.max(done,1))):null,unres=TXS.some(d=>(mine||d.shop===name)&&d.disp);
+const lv=done>=30&&rating>=4.5&&succ>=95&&disp/Math.max(done,1)<=.03?3:done>=1&&!unres?2:1;return{done,disp,canc,dly,n,rating,succ,lv,resp:b.resp,j:b.j}}
+const trust=n=>{const r=rep(n),i=NAMES.indexOf(n);return `<button class='underline text-left' onclick='pubP(${i})'>🛡️ ${r.done} ta xavfsiz bitim | ${r.rating?'★ '+r.rating.toFixed(1)+' ('+r.n+' sharh)':'Hali baholanmagan'}</button> ${lvB(r.lv)}`};
+const fdate=t=>new Date(t).toLocaleDateString('en-GB');
+function authPh(){unavail('SMS')}
+function fav(id){if(!user||user.guest){toast('Sevimlilar uchun ro‘yxatdan o‘ting');return}FAV.has(id)?FAV.delete(id):FAV.add(id);const e=$('mklist');if(e)e.innerHTML=mkCards()}
+function pubP(i){const n=NAMES[i];if(!n)return;const r=rep(n),me=n===ME[0],pr=PR[n];
+const rv=me?[]:[...TXS.filter(d=>d.shop===n&&d.rev).map(d=>[d.rev.s,d.rev.t]),...(pr&&pr.n?SEEDRV:[])].slice(0,4);
+const st=(a,b)=>`<div class='card p-3'><div class='text-[11px] font-bold' style='color:var(--mut)'>${a}</div><div class='disp font-extrabold'>${b}</div></div>`;
+$('modal').innerHTML=`<div class='modal' onclick='if(event.target===this)closeM()'><div class='sheet' style='max-height:90vh;overflow-y:auto'><div class='flex items-center gap-3'><div class='w-14 h-14 rounded-full flex items-center justify-center disp text-xl font-extrabold' style='background:var(--card2)'>${me&&user.photo?`<img src='${user.photo}' alt='' class='w-14 h-14 rounded-full object-cover'>`:esc(n[0])}</div><div><div class='font-extrabold text-lg'>${esc(n)}</div><div class='text-xs' style='color:var(--mut)'>@${n.toLowerCase().replace(/[^a-z0-9]+/g,'_').replace(/^_|_$/g,'')} • ${me?fdate(user.joined):(r.j||'—')}</div>${vtag(n)}</div></div><div class='mt-3'>${lvB(r.lv)}</div>
+<div class='grid grid-cols-2 gap-2 mt-3'>${st('Reyting',r.rating?'★ '+r.rating.toFixed(1)+' ('+r.n+')':'Baholanmagan')}${st('Yakunlangan bitimlar',r.done)}${st('Muvaffaqiyatli',r.done+r.disp+r.canc?r.succ+'%':'—')}${st('O‘rtacha javob',me?'—':r.resp)}</div>
+<div class='text-xs mt-3' style='color:var(--mut)'>Bekor: ${r.canc} • Nizo: ${r.disp} • Kechikish: ${r.dly}${r.done<1?' • Tranzaksiya tarixi cheklangan':''}</div>
+<div class='mt-3 text-xs font-bold' style='color:var(--mut)'>Sharhlar</div>${rv.length?rv.map(x=>`<div class='py-2 border-b' style='border-color:var(--line)'><div class='text-xs font-bold' style='color:var(--gold)'>${'★'.repeat(x[0])}${'☆'.repeat(5-x[0])} <span style='color:var(--mut)'>Tasdiqlangan xaridor</span></div><div class='text-sm'>${x[1]||'—'}</div></div>`).join(''):`<div class='text-sm mt-1' style='color:var(--mut)'>Hali sharhlar yo‘q</div>`}
+<p class='text-[11px] mt-4' style='color:var(--mut)'>Reyting = tasdiqlangan sharhlar o‘rtachasi (sharh kam bo‘lsa o‘rtacha qiymatga yaqinlashtiriladi) − bekor, nizo va kechikish jarimasi. Yangi akkaunt 5★ bilan boshlamaydi. Email va telefon ko‘rsatilmaydi.</p><p class='text-[11px] mt-2 font-bold' style='color:var(--gold)'>🧪 DEV REJIM: ko‘rsatkichlar namunaviy (backend yo‘q).</p><button class='btn mt-4' onclick='closeM()'>Yopish</button></div></div>`}
+function openTx(i,b){deal=TXS[i];dealView=b?'b':'s';openDeal()}
+function startRev(i){revS=0;revT='';openRev(i)}
+function openRev(i){const d=TXS[i];if(!d||d.rev||d.step!==3||d.refunded||d.shop===ME[0]){toast('Sharh yozib bo‘lmaydi');return}
+$('modal').innerHTML=`<div class='modal' onclick='if(event.target===this)closeM()'><div class='sheet'><h2 class='disp font-extrabold text-lg'>⭐ Sharh: ${d.shop}</h2><div class='text-xs mt-1' style='color:var(--mut)'>Faqat tugallangan bitimdan keyin, bir marta yoziladi.</div><div class='flex gap-2 mt-4'>${[1,2,3,4,5].map(n=>`<button class='pill flex-1 ${n<=revS?'on':''}' onclick='setStar(${i},${n})'>${n}★</button>`).join('')}</div><textarea id='rt' class='inp mt-3' rows='3' placeholder='Fikringiz (ixtiyoriy)' oninput='revT=this.value'>${esc(revT)}</textarea><button class='btn glow mt-4' onclick='revSend(${i})'>Yuborish</button></div></div>`}
+function setStar(i,n){revS=n;openRev(i)}
+function revSend(i){const d=TXS[i];if(!revS){toast('Yulduzcha tanlang');return}if(d.rev)return;d.rev={s:revS,t:esc(revT.trim()),time:Date.now()};revS=0;revT='';closeM();paintDash();toast('Sharh qabul qilindi ✓')}
+function addListing(){if(!user||user.guest){lockModal('E’lon joylash uchun ro‘yxatdan o‘ting.','Kirish','closeM();showAuth()');return}if(!kycOk()){lockModal('E’lon joylash faqat tasdiqlangan foydalanuvchilar uchun.','🛡️ Shaxsni tasdiqlash','openKYC()');return}
+$('modal').innerHTML=`<div class='modal' onclick='if(event.target===this)closeM()'><div class='sheet'><h2 class='disp font-extrabold text-lg'>＋ E’lon qo‘shish</h2><input id='lt' class='inp mt-4' placeholder='Sarlavha'><select id='lk' class='inp mt-2'><option>Instagram</option><option>Telegram</option><option>O‘yin</option><option>Boshqa</option></select><input id='lp' class='inp mt-2' inputmode='numeric' placeholder='Narx (so‘m)' oninput='fmtIn(this)'><button class='btn glow disp mt-4' onclick='listGo()'>E’lonni joylash</button></div></div>`}
+function listGo(){const t=$('lt').value.trim(),p=parseInt($('lp').value.replace(/\D/g,''))||0;if(t.length<4){toast('Sarlavha kamida 4 belgi');return}if(p<10000){toast('Narx kamida 10 000 so‘m');return}DIGI.unshift({id:Date.now(),t:$('lk').value,title:esc(t),price:p,seller:ME[0],tags:[],own:true});closeM();paintDash();toast('E’lon joylandi ✓')}
+function openDash(){dashMode=role;paintDash();navPaint(2)}
+function closeDash(){$('dashwrap').innerHTML='';navPaint(buyTab==='m'?1:0)}
+function setDM(n){setRole(n?'b':'s')}
+function paintDash(){if(!user||user.guest)return;const u=user,r=rep(ME[0]),B=dashMode==='b',mine=TXS.filter(d=>d.owner===u.id),done=mine.filter(d=>d.step===3&&!d.refunded),act=mine.filter(d=>d.step<3&&!d.cancelled&&!d.refunded),ix=d=>TXS.indexOf(d);
+const sc=(t,b)=>`<div class='card p-4 mt-3'><div class='text-xs font-bold mb-2' style='color:var(--mut)'>${t}</div>${b}</div>`,em=t=>`<div class='text-sm' style='color:var(--mut)'>${t}</div>`;
+const rw=(a,b,c='')=>`<div class='flex justify-between items-center gap-2 py-2 border-b' style='border-color:var(--line)'><div class='min-w-0'><div class='text-sm font-bold'>${a}</div><div class='text-[11px]' style='color:var(--mut)'>${b}</div></div>${c}</div>`;
+const ob=(d,b,t)=>`<button class='pill shrink-0' onclick='openTx(${ix(d)},${b})'>${t}</button>`,stc=(a,b,c)=>`<div class='card p-3'><div class='text-[11px] font-bold' style='color:var(--mut)'>${a}</div><div class='disp font-extrabold text-lg' style='color:${c}'>${b}</div></div>`;
+const vr=(a,ok,t)=>`<div class='flex justify-between'><span style='color:var(--mut)'>${a}</span><b style='color:${ok?'var(--em)':'var(--mut)'}'>${ok?'✅ '+(t||'Tasdiqlangan (dev)'):'Tasdiqlanmagan'}</b></div>`;
+let body;
+if(B){const pay=mine.filter(d=>d.paidAt),notes=mine.flatMap(d=>d.log.slice(0,3).map(l=>l.time+' • '+l.t)).slice(0,6),fl=[...FAV].map(id=>DIGI.find(x=>x.id===id)).filter(Boolean),dsp=mine.filter(d=>d.dsp);
+body=`<div class='grid grid-cols-3 gap-2 mt-3'>${stc('Jami',mine.length,'var(--txt)')}${stc('Faol',act.length,'var(--gold)')}${stc('Tugallangan',done.length,'var(--em)')}${stc('Bekor',mine.filter(d=>d.cancelled).length,'var(--mut)')}${stc('Sevimli',FAV.size,'var(--txt)')}${stc('Sharhlar',mine.filter(d=>d.rev).length,'var(--gold)')}</div>
+${sc('Faol Garant bitimlari',act.length?act.map(d=>rw(d.item,dstat(d)+' • '+fmt(d.amount)+' so‘m',ob(d,1,'Ochish'))).join(''):em('Faol xaridlar yo‘q'))}
+${sc('Tugallangan xaridlar',done.length?done.map(d=>rw(d.item,fdate(d.created||Date.now())+' • '+fmt(d.amount)+' so‘m',d.rev?`<span class='tag'>★ ${d.rev.s}</span>`:`<button class='pill shrink-0' onclick='startRev(${ix(d)})'>⭐ Sharh</button>`)).join(''):em('Hali tugallangan xarid yo‘q'))}
+${sc('To‘lovlar tarixi',pay.length?pay.map(d=>rw(d.tx,fdate(d.paidAt)+' • '+(d.refunded?'Qaytarildi':'Garant'),`<b class='text-sm'>${fmt(d.amount)}</b>`)).join(''):em('To‘lovlar yo‘q'))}
+${sc('Sevimlilar',fl.length?fl.map(x=>rw(x.title,x.seller,`<b class='text-sm'>${fmt(x.price)}</b>`)).join(''):em('Bozorda 🤍 bosing'))}
+${sc('Xaridor reputatsiyasi',`${lvB(done.length&&!mine.some(d=>d.disp)?2:1)}<div class='text-xs mt-2' style='color:var(--mut)'>${mine.length?'Muvaffaqiyat: '+Math.round(done.length/Math.max(1,done.length+mine.filter(d=>d.cancelled||d.dsp).length)*100)+'%':'Hali xaridlar yo‘q — yangi a’zo'} • Bekor: ${mine.filter(d=>d.cancelled).length}</div>`)}
+${sc('Sharhlar',`<div class='text-xs font-bold'>Yozganlarim</div>${mine.filter(d=>d.rev).length?mine.filter(d=>d.rev).map(d=>rw(d.shop,'★ '+d.rev.s+(d.rev.t?' • '+d.rev.t:''))).join(''):em('Hali sharh yozmadingiz')}<div class='text-xs font-bold mt-3'>Menga yozilganlar</div>${em('Hali sharh yo‘q')}`)}
+${sc('Nizolar',dsp.length?dsp.map(d=>rw(d.dsp,d.item+' • '+dstat(d),ob(d,1,'Ochish'))).join(''):em('Nizolar yo‘q'))}
+${sc('Bildirishnomalar',notes.length?notes.map(t=>`<div class='text-xs py-1'>${t}</div>`).join(''):em('Yangi xabar yo‘q'))}`}
+else{const pend=mine.filter(d=>d.step>=1&&d.step<3&&!d.refunded&&!d.cancelled).reduce((a,d)=>a+d.amount,0),fee=d=>Math.round(d.amount*.05),fees=done.reduce((a,d)=>a+fee(d),0),inc=done.reduce((a,d)=>a+d.amount-fee(d),0),own=DIGI.filter(x=>x.own);
+body=`<div class='grid grid-cols-2 gap-2 mt-3'>${stc('Mavjud balans',fmt(bal)+' so‘m','var(--gold)')}${stc('Escrowdagi pul',fmt(pend)+' so‘m','var(--txt)')}${stc('Sotuvlar',done.length,'var(--em)')}${stc('Komissiya (5%)',fmt(fees)+' so‘m','var(--mut)')}${stc('Jami daromad',fmt(inc)+' so‘m','var(--em)')}${stc('Faol buyurtma',act.length,'var(--gold)')}${stc('Bekor qilingan',mine.filter(d=>d.cancelled).length,'var(--mut)')}${stc('Faol e’lonlar',own.length,'var(--txt)')}</div><button class='pill w-full mt-3' style='border-color:var(--gold);color:var(--gold)' onclick='withdraw()'>💸 Pul yechish${kycOk()?'':' 🔒'}</button>
+${sc('Reputatsiya',`${lvB(r.lv)}<div class='text-sm mt-2'>${r.rating?'★ '+r.rating.toFixed(1)+' ('+r.n+' sharh)':'Hali baholanmagan'}</div><div class='text-xs mt-1' style='color:var(--mut)'>Muvaffaqiyat: ${r.succ}% • Bekor: ${r.canc} • Nizo: ${r.disp}</div><button class='pill mt-2' onclick='pubP(${NAMES.length-1})'>Ommaviy profil</button>`)}
+${sc('Kiruvchi buyurtmalar',act.length?act.map(d=>rw(d.item,dstat(d),ob(d,0,d.step===1&&!d.disp?'✅ Topshirish':'Ochish'))).join(''):em('Buyurtmalar yo‘q'))}
+${sc('Komissiya tarixi',done.length?done.map(d=>rw(d.tx,fmt(d.amount)+' → sizga '+fmt(d.amount-fee(d)),`<b class='text-sm'>−${fmt(fee(d))}</b>`)).join(''):em('Hali yo‘q'))}
+${sc('E’lonlarim',(own.length?own.map(x=>rw(x.title,x.t,`<b class='text-sm'>${fmt(x.price)}</b>`)).join(''):em('E’lonlar yo‘q'))+`<button class='pill w-full mt-3' onclick='addListing()'>＋ E’lon qo‘shish</button>`)}
+${sc('Savdo statistikasi',`<div class='text-sm'>O‘rtacha buyurtma: <b>${done.length?fmt(Math.round(done.reduce((a,d)=>a+d.amount,0)/done.length)):'—'} so‘m</b></div><div class='text-sm mt-1'>Bajarilish darajasi: <b>${r.succ}%</b></div><div class='text-sm mt-1'>Tugallangan buyurtmalar: <b>${done.length}</b></div>`)}
+${sc('Bildirishnomalar',mine.length?mine.flatMap(d=>d.log.slice(0,2).map(l=>`<div class='text-xs py-1'>${l.time} • ${l.t}</div>`)).slice(0,6).join(''):em('Yangi xabar yo‘q'))}
+${sc('Sharhlar',em('Sizga hali sharh yozilmagan'))}
+<p class='text-[11px] mt-3' style='color:var(--gold)'>🧪 DEV REJIM: bitimning ikkala tomonini siz boshqarasiz.</p>`}
+const o=$('dashwrap').firstElementChild,s0=o?o.scrollTop:0;
+$('dashwrap').innerHTML=`<div class='fixed inset-0 overflow-y-auto' style='z-index:39;background:var(--bg);bottom:calc(66px + env(safe-area-inset-bottom,0px))'><div class='max-w-[440px] mx-auto px-5 pb-12' style='padding-top:calc(16px + env(safe-area-inset-top,0px))'><div class='flex items-center gap-3 mb-4'><button class='w-10 h-10 rounded-full card text-lg' onclick='closeDash()'>‹</button><h1 class='disp font-extrabold text-lg'>Mening kabinetim</h1></div>
+<div class='card p-4'><div class='flex items-center gap-3'><label class='cursor-pointer relative'><input type='file' accept='image/*' class='hidden' onchange='pickPhoto(this)'>${u.photo?`<img src='${u.photo}' alt='' class='w-14 h-14 rounded-full object-cover'>`:`<div class='w-14 h-14 rounded-full flex items-center justify-center disp text-xl font-extrabold' style='background:var(--card2)'>${esc(u.name[0])}</div>`}<span class='absolute -bottom-1 -right-1 text-xs'>📷</span></label><div><div class='font-extrabold'>${esc(u.name)}</div><div class='text-xs' style='color:var(--mut)'>@${u.un} • ${fdate(u.joined)}</div><div class='mt-1'>${lvB(r.lv)}</div></div></div>
+<div class='text-xs mt-3' style='color:var(--mut)'>Aloqa: <b>${esc(maskC(u.contact))}</b>${u.test?' • Test akkaunt':''}</div><div class='mt-2 space-y-1 text-xs'>${vr('Email',/@.+\./.test(u.contact))}${vr('Telefon',/^\+998/.test(u.contact))}${vr('Shaxs (KYC)',kycOk(),kycOk()?fdate(u.kycAt)+' (dev)':'')}</div><div class='mt-3'>${kycTag()}</div><button class='w-full mt-3 text-xs font-bold' style='color:#f87171' onclick='closeDash();logout()'>Chiqish</button></div>
+<div class='flex gap-2 mt-4'><button class='pill flex-1 ${B?'on':''}' onclick='setDM(1)'>🛒 Xaridor</button><button class='pill flex-1 ${B?'':'on'}' onclick='setDM(0)'>🏪 Sotuvchi</button></div>${body}</div></div>`;
+const n=$('dashwrap').firstElementChild;if(n)n.scrollTop=s0}
+let naName='';
+const maskC=c=>/@.+\./.test(c)?c.replace(/^(.{2}).*(@.*)$/,'$1***$2'):/\d/.test(c)?c.replace(/\d/g,'•').slice(0,-2)+c.slice(-2):c;
+function unavail(n){naName=n;authGo('na')}
+function naHTML(){return `<button class='text-3xl self-start mb-4' onclick='authBack()'>‹</button><div class='text-center'><div class='text-5xl'>🔌</div><h2 class='disp text-xl font-extrabold mt-4'>${naName} orqali kirish vaqtincha mavjud emas</h2><p class='text-sm mt-3' style='color:var(--mut)'>Xizmat hozircha sozlanmagan. Iltimos, keyinroq urinib ko‘ring yoki mehmon sifatida davom eting.</p><button class='btn mt-6' onclick='skipAuth()'>Mehmon sifatida ko‘rish</button></div>`}
+async function loginG(){if(!sb){unavail('Google');return}authStep='load';paintAuth();const{error}=await sb.auth.signInWithOAuth({provider:'google',options:{redirectTo:location.origin+location.pathname}});if(error){toast('Google orqali kirishda xatolik. Qayta urinib ko‘ring');showAuth()}}
+async function startSession(s){const{data:p,error}=await sb.from('profiles').select('*').eq('id',s.user.id).single();if(error||!p){toast('Profilni yuklab bo‘lmadi. Qayta urinib ko‘ring');showAuth();return}loginUser({id:p.id,name:p.display_name||'Foydalanuvchi',un:p.username,joined:new Date(p.created_at).getTime(),contact:s.user.email||'',kyc:p.kyc_status==='verified'?'ok':p.kyc_status==='pending'?'pending':'none',photo:p.avatar_url||null})}
+async function initAuth(){const{data}=await sb.auth.getSession();if(data.session)await startSession(data.session);else showAuth();sb.auth.onAuthStateChange((ev,ss)=>{if(ev==='SIGNED_IN'&&ss&&(!user||user.id!==ss.user.id))startSession(ss);if(ev==='SIGNED_OUT'&&user){user=null;paintPB();render();showAuth()}})}
+function loginA(){unavail('Apple')}
+function testLogin(){if(LIVE)return;loginUser({name:'Test Foydalanuvchi',contact:'Test akkaunt',kyc:'none',test:true})}
+function pickPhoto(inp){const f=inp.files[0];if(!f)return;const fr=new FileReader();fr.onload=()=>{const im=new Image();im.onload=()=>{const c=document.createElement('canvas');c.width=c.height=160;const k=Math.max(160/im.width,160/im.height),w=im.width*k,h=im.height*k;c.getContext('2d').drawImage(im,(160-w)/2,(160-h)/2,w,h);user.photo=c.toDataURL('image/jpeg',.8);paintDash();paintPB()};im.src=fr.result};fr.readAsDataURL(f)}
+function navPaint(i){document.querySelectorAll('.navb').forEach((b,k)=>b.classList.toggle('on',k===i))}
+function navGo(i){if(i<2){closeDash();$('dealwrap').innerHTML='';buyTab=i?'m':'a';setRole('b');navPaint(i);return}
+if(!user||user.guest){toast('Kabinet va profil uchun ro‘yxatdan o‘ting');showAuth();return}
+if(i===2){$('dealwrap').innerHTML='';dashMode=role;paintDash();navPaint(2)}else pubP(NAMES.length-1)}
+function dealBanner(){return deal&&deal.step<3?`<button class='card w-full p-3 mb-4 flex items-center justify-between text-left glow' style='border-color:var(--em)' onclick='dealView=role;openDeal()'><span class='text-sm font-extrabold'>🛡️ Faol xavfsiz bitim: ${deal.shop}</span><span class='text-xs font-bold' style='color:var(--em)'>Ochish ›</span></button>`:''}
+function logD(t){deal.log.unshift({t,time:new Date().toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'})})}
+function choose(id){if(!user||user.guest){toast('Garant bitim uchun ro‘yxatdan o‘ting');showAuth();return}const r=R.find(x=>x.id===myId),x=r.bids.find(b=>b.id===id);if(deal&&deal.step>0&&deal.step<3){dealView='b';openDeal();toast('Avval joriy bitimni yakunlang');return}
+deal={rid:r.id,id,shop:x.shop,item:r.title,amount:x.price,step:0,disp:false,log:[],tx:newTx(),dig:!!r.dig};deal.owner=user.id;deal.created=Date.now();TXS.push(deal);logD('Bitim ochildi: '+x.shop+' taklifi qabul qilindi');dealView='b';openDeal()}
+function openDeal(){$('dealwrap').innerHTML=dealHTML()}
+function repaintDeal(){const o=$('dealwrap').firstElementChild,st=o?o.scrollTop:0;openDeal();const n=$('dealwrap').firstElementChild;if(n)n.scrollTop=st}
+function setDV(v){dealView=v;repaintDeal()}
+function closeDeal(){$('dealwrap').innerHTML='';if($('dashwrap').innerHTML)setTimeout(paintDash,0);if(deal&&deal.step===3){deal=null;myId=null}render()}
+function finishDeal(){closeDeal()}
+function dealPayDone(){deal.paying=false;deal.step=1;deal.paidAt=Date.now();logD('💳 Xaridor '+fmt(deal.amount)+' so‘mni Garant balansiga o‘tkazdi');repaintDeal();toast('Pul Garantda qulflandi 🔒')}
+function dealShip(){deal.step=2;logD('✅ Sotuvchi tovar/akkauntni topshirdi');repaintDeal();toast('Topshirildi – xaridor tasdig‘i kutilmoqda')}
+function dealOk(){const f=Math.round(deal.amount*.05);deal.step=3;bal+=deal.amount-f;revenue+=f;meDeals++;logD('🤝 Xaridor qabul qildi – bitim yopildi');const r=R.find(x=>x.id===deal.rid);if(r)r.end=Date.now();repaintDeal();burst()}
+function callMod(){deal.disp=true;deal.dsp='NZO-'+Math.random().toString(36).slice(2,7).toUpperCase();logD('⚠️ Moderator chaqirildi, mablag‘ muzlatildi');repaintDeal();toast('Moderator chaqirildi')}
+function resolveD(){deal.disp=false;logD('✅ Moderator muammoni hal qildi');repaintDeal()}
+function burst(){const w=$('dealwrap'),c=['#10b981','#f59e0b','#38bdf8','#f472b6','#e8edf7'];for(let i=0;i<40;i++){const e=document.createElement('i');e.className='cf';e.style.cssText=`left:${rnd(0,100)}%;background:${c[i%5]};animation-duration:${rnd(2,4)}s;animation-delay:${rnd(0,.8)}s`;w.appendChild(e);setTimeout(()=>e.remove(),5000)}}
+function dealHTML(){
+const d=deal,B=dealView==='b',s=d.step,f=Math.round(d.amount*.05),pay=d.amount-f;
+const wait=t=>`<div class='rounded-2xl p-4 text-sm text-center' style='background:var(--card2);color:var(--mut)'><div class='live mx-auto mb-2'></div>${t}</div>`;
+const act=(t,fn)=>`<button class='btn glow disp text-base' onclick='${fn}'>${t}</button>`;
+const dot=(i,l)=>`<div class='flex-1 text-center'><div class='mx-auto w-9 h-9 rounded-full flex items-center justify-center font-extrabold text-sm' style='background:${s>i?'var(--em)':s===i?'var(--gold)':'var(--card2)'};color:${s>=i?'#04130d':'var(--mut)'}'>${s>i?'✓':i+1}</div><div class='text-[11px] font-bold mt-1.5' style='color:${s>=i?'var(--txt)':'var(--mut)'}'>${l}</div></div>`;
+const seg=`<div class='flex gap-2 mb-4'><button class='pill flex-1 ${B?'on':''}' onclick='setDV("b")'>👤 Xaridor</button><button class='pill flex-1 ${!B?'on':''}' onclick='setDV("s")'>🏪 Sotuvchi</button></div>`;
+let body;
+if(s===3){body=`<div class='text-center pt-4 pop'><div class='text-6xl'>🎉</div><h2 class='disp text-xl font-extrabold mt-3'>Bitim muvaffaqiyatli yakunlandi!</h2><p class='text-sm mt-2' style='color:var(--mut)'>Ikkala tomon tasdiqladi. Mablag‘ taqsimlandi.</p></div>
+<div class='card p-4 mt-5 space-y-4'><div><div class='flex justify-between text-sm font-bold'><span>🏪 Sotuvchi hamyoni (95%)</span><span style='color:var(--em)'>+${fmt(pay)} so‘m</span></div><div class='h-2.5 rounded-full mt-2' style='background:var(--card2)'><div class='h-full rounded-full' style='width:95%;background:var(--em)'></div></div></div>
+<div><div class='flex justify-between text-sm font-bold'><span>💼 Ilova daromadi (5%)</span><span style='color:var(--gold)'>+${fmt(f)} so‘m</span></div><div class='h-2.5 rounded-full mt-2' style='background:var(--card2)'><div class='h-full rounded-full' style='width:5%;background:var(--gold)'></div></div></div></div>
+<div class='card p-3 mt-3 text-sm flex justify-between'><span style='color:var(--mut)'>Ilovaning jami daromadi</span><b style='color:var(--gold)'>${fmt(revenue)} so‘m</b></div>
+<div class='card p-3 mt-3 text-sm flex justify-between'><span style='color:var(--mut)'>Sotuvchi balansi</span><b style='color:var(--em)'>${fmt(bal)} so‘m</b></div>
+<button class='btn glow disp mt-5' onclick='finishDeal()'>Yangi auksion boshlash</button>`}
+else{let main;
+if(d.refunded)main=`<div class='rounded-2xl p-4 text-sm' style='background:rgba(56,189,248,.12);border:1px solid #38bdf8'><b>↩️ Pul xaridorga qaytarildi</b><br><span style='color:var(--mut)'>Nizo ko‘rib chiqildi. Tranzaksiya yopildi.</span></div>`;else if(d.cancelled)main=`<div class='rounded-2xl p-4 text-sm text-center' style='background:var(--card2);color:var(--mut)'>✖️ Buyurtma bekor qilindi</div>`;else if(d.disp)main=`<div class='rounded-2xl p-4 text-sm' style='background:rgba(248,113,113,.12);border:1px solid #f87171'><b>⚠️ Moderator chaqirildi</b><br><span style='color:var(--mut)'>Mablag‘ Garant balansida muzlatilgan. Moderator ikkala tomon bilan bog‘lanadi.</span></div><div class='card p-3 mt-3'><div class='text-[11px] font-bold' style='color:var(--mut)'>Nizo ID: ${d.dsp} • 🧑‍⚖️ Administrator paneli (demo). Haqiqiy rejimda faqat administrator kira oladi.</div><div class='flex gap-2 mt-2'><button class='pill flex-1' onclick='adminRes(1)'>↩️ Xaridorga qaytarish</button><button class='pill flex-1' onclick='adminRes(2)'>✅ Sotuvchiga chiqarish</button></div></div>`;
+else if(s===0)main=B?act('💳 Pulni Garant balansiga o‘tkazish','dealPay()')+`<button class='w-full mt-3 text-sm font-bold' style='color:var(--mut)' onclick='dealCancel()'>Buyurtmani bekor qilish</button>`:wait('Xaridor pulni Garant balansiga o‘tkazishini kutmoqdamiz…');
+else if(s===1)main=B?wait('Pul Garantda xavfsiz. Sotuvchi tovarni topshirishi kutilmoqda…'):act('✅ Tovar/Akkauntni topshirdim','dealShip()');
+else main=B?act('🤝 Qabul qildim va Tasdiqlayman','dealOk()'):wait('Xaridorning tasdig‘i kutilmoqda…');
+body=`<div class='card p-4'><div class='flex justify-between items-start gap-3'><div><div class='font-extrabold'>${d.shop} <span style='color:var(--em)'>✔</span></div><div class='text-[11px] font-bold mt-1' style='color:var(--gold)'>${trust(d.shop)}</div>${vtag(d.shop)}<div class='text-sm mt-2' style='color:var(--mut)'>${d.item}</div>${d.dig?`<div class='text-[11px] mt-2' style='color:var(--mut)'>🔐 Akkaunt parollari ilovada saqlanmaydi. Ma’lumotlarni faqat Garant bitimi doirasida topshiring.</div>`:''}</div><div class='text-right shrink-0'><div class='disp font-extrabold text-lg'>${fmt(d.amount)}</div><div class='text-xs' style='color:var(--mut)'>so‘m</div></div></div><div class='text-xs mt-3' style='color:var(--mut)'>Komissiya 5%: ${fmt(f)} so‘m • Sotuvchi oladi: ${fmt(pay)} so‘m</div><div class='mt-3 flex justify-between items-center gap-2'><span class='text-[11px] font-bold' style='color:var(--mut)'>ID: ${d.tx}</span><span class='tag'>${dstat(d)}</span></div><div class='text-[10px] font-bold mt-2' style='color:var(--gold)'>DEMO REJIM • haqiqiy pul harakatlanmaydi</div></div>
+<div class='card p-4 mt-3 ${s>=1?'best':''}' style='background:linear-gradient(160deg,#16213a,#1d2a14)'><div class='flex items-center gap-3'><div class='text-3xl'>${s>=1?'🔒':'🏦'}</div><div><div class='text-xs font-bold' style='color:var(--mut)'>Garant balansi</div><div class='disp text-xl font-extrabold' style='color:var(--gold)'>${fmt(s>=1?d.amount:0)} so‘m</div><div class='text-xs' style='color:var(--mut)'>${s===0?'Pul hali o‘tkazilmagan':'Pul ilovada xavfsiz saqlanmoqda'}</div></div></div></div>
+<div class='flex items-start my-5'>${dot(0,'To‘lov')}${dot(1,'Topshirish')}${dot(2,'Tasdiqlash')}</div>
+${main}
+${B&&s>=1&&!d.mk?`<button class='pill w-full mt-3' onclick='legacyContact(${d.id})'>📞 Sotuvchi bilan bog‘lanish</button>`:''}
+${d.disp||d.refunded||d.cancelled?'':`<button class='w-full mt-4 py-3 rounded-xl text-sm font-extrabold' style='border:1px solid #f87171;color:#f87171' onclick='callMod()'>⚠️ Muammo / Moderator chaqirish</button>`}
+<div class='mt-5 space-y-1.5'>${d.log.map(l=>`<div class='flex gap-2 text-xs'><span style='color:var(--mut)'>${l.time}</span><span>${l.t}</span></div>`).join('')}</div>`}
+return `<div class='fixed inset-0 z-40 overflow-y-auto' style='background:var(--bg);bottom:calc(66px + env(safe-area-inset-bottom,0px))'><div class='max-w-[440px] mx-auto px-5 pb-10' style='padding-top:calc(16px + env(safe-area-inset-top,0px))'><div class='flex items-center gap-3 mb-4'><button class='w-10 h-10 rounded-full card text-lg' onclick='closeDeal()'>‹</button><h1 class='disp font-extrabold text-lg'>Xavfsiz Bitim (Garant)</h1></div>${seg}${body}</div></div>`}
+function legacyContact(id){
+  const r=R.find(x=>x.id===myId);const x=r.bids.find(b=>b.id===id);
+  $('modal').innerHTML=`<div class="modal" onclick="if(event.target===this)closeM()"><div class="sheet text-center">
+    <div class="mx-auto w-16 h-16 rounded-full flex items-center justify-center mb-4 glow" style="background:var(--em)"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#04130d" stroke-width="3"><path d="M5 12l5 5 9-10"/></svg></div>
+    <h2 class="disp text-xl font-extrabold">Tanlov qabul qilindi!</h2>
+    <p class="text-sm mt-2" style="color:var(--mut)">${x.shop} – ${fmt(x.price)} so‘m<br>${x.bonus}</p>
+    <div class="card p-4 mt-5 text-left" style="background:var(--card2)">
+      <div class="text-xs font-bold" style="color:var(--mut)">Telefon</div><a href="tel:${x.phone.replace(/\s/g,'')}" class="font-extrabold text-lg">${x.phone}</a>
+      <div class="text-xs font-bold mt-3" style="color:var(--mut)">Telegram</div><a href="https://t.me/${x.tg}" target="_blank" rel="noopener" class="font-extrabold" style="color:#38bdf8">t.me/${x.tg}</a></div>
+    <a href="tel:${x.phone.replace(/\s/g,'')}" class="btn glow block mt-5">Qo‘ng‘iroq qilish</a>
+    <button class="mt-3 text-sm font-bold" style="color:var(--mut)" onclick="closeM()">Yopish</button></div></div>`;
+}
+function closeM(){chatBid=null;$('modal').innerHTML=''}
+
+/* ---------- SELLER ---------- */
+function sellerHTML(){
+  return `<div class="mb-4"><h1 class="disp text-2xl font-extrabold leading-tight">Faol buyurtmalar</h1>
+  <p class="text-sm mt-2" style="color:var(--mut)">Pastroq narx taklif qiling – xaridor sizni ko‘radi.</p></div>
+  <div class="card p-3 mb-4 flex items-center justify-between" style="background:linear-gradient(135deg,#2a2210,#16213a);border-color:rgba(245,158,11,.5)"><div><div class="text-[11px] font-bold" style="color:var(--mut)">Hamyon</div><div id="bal" class="disp font-extrabold text-lg" style="color:var(--gold)">Balans: ${fmt(bal)} so‘m</div><div class="text-[11px] font-bold mt-0.5" style="color:var(--mut)">${trust(ME[0])}</div><div class='mt-1.5'>${kycTag()}</div></div><div class='flex flex-col gap-2'><button class='pill' onclick='topUp()'>+ 50 000</button><button class='pill' style='border-color:var(--gold);color:var(--gold)' onclick='withdraw()'>💸 Yechish${kycOk()?'':' 🔒'}</button></div></div>
+  <div class="space-y-3">${R.map(r=>`
+  <div class="card p-4" id="rq${r.id}">
+    <div class="flex justify-between gap-3">
+      <div><div class="text-xs font-bold" style="color:var(--mut)">${r.city} • ${r.cond}${r.mine?' • <span style="color:var(--em)">yangi</span>':''}</div>
+      <div class="font-extrabold leading-snug mt-0.5">${r.title}</div>${bvt(r)}${tagsHTML(r)}<span class="tag mt-2 inline-block" style="background:rgba(245,158,11,.15);color:var(--gold)">${r.urg}</span>${r.img?`<img src="${r.img}" alt="" class="mt-2 h-24 rounded-xl object-cover">`:''}</div>
+      <div class="disp font-extrabold text-lg shrink-0" style="color:var(--gold)" data-t="${r.id}">${clock(left(r))}</div>
+    </div>
+    <div class="flex justify-between items-center mt-3 text-sm">
+      <span style="color:var(--mut)">Eng past narx</span>
+      <span class="font-extrabold" style="color:var(--em)" data-best="${r.id}"></span>
+    </div>
+    <div class="flex gap-2 mt-3">
+      <input id="in${r.id}" inputmode="numeric" class="inp" placeholder="Sizning narxingiz (so‘m)" oninput="this.value=fmt(this.value.replace(/\D/g,''))">
+      <button class="rounded-xl px-4 font-extrabold text-sm shrink-0" style="background:var(--gold);color:#1a1100" onclick="sellerBid(${r.id})">Narx tashlash</button>
+    </div>
+    <div class="flex gap-2 mt-2 ${r.dig?'hidden':''}"><input id="im${r.id}" inputmode="numeric" class="inp" placeholder="Nasiya: oylik to‘lov (so‘m)" oninput="this.value=fmt(this.value.replace(/\D/g,''))"><select id="ik${r.id}" class="inp" style="width:104px"><option value="6">6 oy</option><option value="12">12 oy</option><option value="24">24 oy</option></select></div>
+    <div id="ph${r.id}" class="mt-3">${phoneHTML(r)}</div></div>`).join('')}</div>`;
+}
+function paintBest(r){
+  const e=document.querySelector(`[data-best="${r.id}"]`);if(!e)return;
+  const b=best(r);e.textContent=b?fmt(b)+' so‘m':'Hali taklif yo‘q';
+}
+function sellerBid(id){if(!user||user.guest){toast('Narx taklif qilish uchun ro‘yxatdan o‘ting');showAuth();return}
+  const r=R.find(x=>x.id===id),el=$('in'+id);
+  const p=parseInt(el.value.replace(/\D/g,''))||0,b=best(r);
+  if(left(r)===0){toast('Auksion yakunlangan');return}
+  if(!p){toast('Narxni kiriting');return}
+  if(b&&p>=b){toast('Narx '+fmt(b)+' so‘mdan past bo‘lishi kerak');return}
+  const nm=parseInt($('im'+id).value.replace(/\D/g,''))||0;
+  const x={id:bidSeq++,shop:ME[0],phone:ME[1],tg:ME[2],price:p,inst:nm?{m:parseInt($('ik'+id).value),pay:nm}:null,bonus:'Bepul yetkazib berish',verified:true};$('im'+id).value='';
+  r.bids.push(x);lastNew=x.id;el.value='';paintBest(r);
+  toast('Narx yuborildi: '+fmt(p)+' so‘m ✓');
+}
+
+/* ---------- LOOPS ---------- */
+setInterval(()=>{
+  document.querySelectorAll('[data-t]').forEach(e=>{
+    const r=R.find(x=>x.id==e.dataset.t);if(!r)return;
+    e.textContent=clock(left(r));
+    if(left(r)<60000)e.style.color='#f87171';
+  });
+  R.forEach(paintBest);
+},1000);
+// competing bids: buyer's auction gets a new undercut every few seconds (up to 6), others occasionally
+(function loop(){
+  setTimeout(()=>{
+    R.forEach(r=>{
+      if(left(r)===0)return;
+      if(r.mine){ if(r.bids.length<6&&role==='b'&&myId===r.id){simBid(r);refreshRoom()} else if(r.bids.length<6&&Math.random()<.6){simBid(r)} }
+      else if(Math.random()<.18&&r.bids.length<8){simBid(r);paintBest(r)}
+    });
+    loop();
+  },rnd(2800,4600));
+})();
+// keep buyer room live when a seller bid arrives from the other tab
+setInterval(()=>{if(role==='b'&&myId)refreshRoom()},1500);
+paintPB();navPaint(0);if(sb)initAuth();else showAuth();
+render();
+</script>
+</body>
+</html>
