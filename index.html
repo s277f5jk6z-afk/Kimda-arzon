@@ -304,4 +304,49 @@
 
             <div class="card active-lot" id="lot-card">
                 <span class="label">Faol ariza</span>
-                <div class="lot-title" id="lot-title">iPhone 15 Pro 256GB</div>
+                <div class="lot-title" id="lot-title">iPhone 15 Pro 256GB</div> 
+                                <div class="lot-meta" id="lot-meta">Toshkent • Bugun kerak</div>
+                <div class="timer" id="timer">14:59</div>
+                <button class="btn-cancel" onclick="alert('Ariza bekor qilindi')">Bekor qilish</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        try {
+            if (window.Telegram && window.Telegram.WebApp) {
+                window.Telegram.WebApp.ready();
+                window.Telegram.WebApp.expand();
+            }
+        } catch (e) {}
+
+        function enterApp(method) {
+            document.getElementById('auth-screen').style.display = 'none';
+            document.getElementById('main-app').style.display = 'block';
+        }
+
+        function switchRole(el) {
+            document.querySelectorAll('.role-btn').forEach(b => b.classList.remove('active'));
+            el.classList.add('active');
+        }
+
+        function selectChip(el) {
+            el.parentElement.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+            el.classList.add('active');
+        }
+
+        function createAuction() {
+            const val = document.getElementById('item-input').value.trim();
+            const city = document.getElementById('city-select').value;
+            if (!val) {
+                alert("Iltimos, mahsulot nomini kiriting!");
+                return;
+            }
+            document.getElementById('lot-title').innerText = val;
+            document.getElementById('lot-meta').innerText = city + " • Bugun kerak";
+            alert("Arizangiz sotuvchilarga yuborildi!");
+        }
+    </script>
+</body>
+</html>
+
