@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="uz" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>KIM ARZON? — Jonli Savdo</title>
+  <script src="https://telegram.org"></script>
+  <script src="https://tailwindcss.com"></script>
+  <style>
+    body {
+      background-color: #020617;
+      color: #f8fafc;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .glass {
+      background: rgba(15, 23, 42, 0.85);
+      backdrop-filter: blur(12px);
+    }
+    .pill-active {
+      background-color: #10b981 !important;
+      color: #020617 !important;
+      border-color: #10b981 !important;
+      font-weight: 700;
+    }
+  </style>
+</head>
+<body class="min-h-screen pb-10">
+  <div class="max-w-md mx-auto p-4 space-y-4">
+
+    <!-- Header -->
+    <div class="flex items-center justify-between pt-1">
+      <div>
+        <h1 class="text-xl font-black tracking-tight text-white">KIM <span class="text-emerald-400">ARZON?</span></h1>
+        <p class="text-[11px] text-slate-400">Jonli teskari auksion platformasi</p>
+      </div>
+      <span class="text-[10px] px-2.5 py-1 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 font-bold">● LIVE</span>
+    </div>
+
+    <!-- Role Switcher -->
+    <div class="grid grid-cols-2 gap-1.5 p-1 rounded-xl bg-slate-900 border border-slate-800">
+      <button id="tabBuyer" onclick="switchRole('buyer')" class="py-2 text-xs font-bold rounded-lg bg-emerald-500 text-slate-950">🛒 Xaridor</button>
+      <button id="tabSeller" onclick="switchRole('seller')" class="py-2 text-xs font-bold rounded-lg text-slate-400">🏪 Sotuvchi</button>
+    </div>
+
+    <!-- BUYER VIEW -->
+    <div id="buyerView" class="space-y-4">
+
+      <!-- Create Request Card -->
+      <div id="createRequestCard" class="glass rounded-2xl p-4 border border-slate-800 space-y-4">
+        <div>
+          <label class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Kategoriya</label>
+          <div class="grid grid-cols-3 gap-2 mt-1.5">
+            <button onclick="selectCategory('physical', this)" class="cat-btn pill-active py-2 px-2 rounded-xl border border-slate-700 text-xs text-slate-300">📱 Tovarlar</button>
+            <button onclick="selectCategory('social', this)" class="cat-btn py-2 px-2 rounded-xl border border-slate-700 text-xs text-slate-300">📲 Akkauntlar</button>
+            <button onclick="selectCategory('game', this)" class="cat-btn py-2 px-2 rounded-xl border border-slate-700 text-xs text-slate-300">🎮 O'yinlar</button>
+          </div>
+        </div>
+
+        <div>
+          <label class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Nima qidiryapsiz?</label>
+          <input id="itemNameInput" type="text" placeholder="Masalan: iPhone 15 Pro 256GB" class="w-full mt-1.5 px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500" />
+        </div>
+
+        <!-- Physical Fields -->
+        <div id="physicalFields" class="space-y-3">
+          <div>
+            <label class="text-[11px] font-semibold text-slate-400">Holati</label>
+            <div class="grid grid-cols-2 gap-2 mt-1">
+              <button onclick="selectPill(this, 'cond')" class="cond-pill pill-active py-1.5 rounded-lg border border-slate-700 text-xs text-slate-300">✨ Yangi (Upakovka)</button>
+              <button onclick="selectPill(this, 'cond')" class="cond-pill py-1.5 rounded-lg border border-slate-700 text-xs text-slate-300">♻️ B/U (Ideal)</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Social Fields -->
+        <div id="socialFields" class="hidden space-y-3">
+          <div>
+            <label class="text-[11px] font-semibold text-slate-400">Tarmoq turi</label>
+            <div class="grid grid-cols-3 gap-2 mt-1">
+              <button onclick="selectPill(this, 'soc')" class="soc-pill pill-active py-1.5 rounded-lg border border-slate-700 text-xs text-slate-300">Instagram</button>
+              <button onclick="selectPill(this, 'soc')" class="soc-pill py-1.5 rounded-lg border border-slate-700 text-xs text-slate-300">Telegram</button>
+              <button onclick="selectPill(this, 'soc')" class="soc-pill py-1.5 rounded-lg border border-slate-700 text-xs text-slate-300">TikTok</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Game Fields -->
+        <div id="gameFields" class="hidden space-y-3">
+          <div>
+            <label class="text-[11px] font-semibold text-slate-400">O'yin nomi</label>
+            <div class="grid grid-cols-3 gap-2 mt-1">
+              <button onclick="selectPill(this, 'game')" class="game-pill pill-active py-1.5 rounded-lg border border-slate-700 text-xs text-slate-300">PUBG Mobile</button>
+              <button onclick="selectPill(this, 'game')" class="game-pill py-1.5 rounded-lg border border-slate-700 text-xs text-slate-300">Free Fire</button>
+              <button onclick="selectPill(this, 'game')" class="game-pill py-1.5 rounded-lg border border-slate-700 text-xs text-slate-300">Brawl Stars</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-2.5">
+          <div>
+            <label class="text-[11px] font-semibold text-slate-400">Hudud</label>
+            <select id="regionSelect" class="w-full mt-1 px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-xs text-white focus:outline-none">
+              <option value="Toshkent">Toshkent</option>
+              <option value="Samarqand">Samarqand</option>
+              <option value="Farg'ona">Farg'ona</option>
+              <option value="Andijon">Andijon</option>
+              <option value="Namangan">Namangan</option>
+              <option value="Buxoro">Buxoro</option>
+              <option value="O'zbekiston bo'ylab">O'zbekiston bo'ylab</option>
+            </select>
+          </div>
+          <div>
+            <label class="text-[11px] font-semibold text-slate-400">Muddat</label>
+            <select id="urgencySelect" class="w-full mt-1 px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-xs text-white focus:outline-none">
+              <option value="Bugun kerak">⚡ Bugun kerak</option>
+              <option value="1-2 kun ichida">📅 1-2 kun ichida</option>
+              <option value="Narx bilmoqchiman">👀 Narx bilmoqchiman</option>
+            </select>
+          </div>
+        </div>
+
+        <button onclick="startAuction()" class="w-full py-3 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-extrabold text-sm shadow-lg shadow-emerald-500/20 active:scale-[0.99] transition">
+          🚀 Auksionni boshlash
+        </button>
+      </div>
+
+      <!-- Live Auction Room -->
+      <div id="liveAuctionRoom" class="hidden space-y-3">
+        <div class="glass rounded-2xl p-4 border border-emerald-500/30 flex justify-between items-center">
+          <div>
+            <span class="text-[10px] uppercase font-bold text-emerald-400">Faol ariza</span>
+            <h2 id="activeItemTitle" class="font-extrabold text-base text-white">iPhone 15 Pro 256GB</h2>
+            <p id="activeItemMeta" class="text-[11px] text-slate-400">Toshkent • Bugun kerak</p>
+          </div>
+          <div class="text-right">
+            <div id="timerDisplay" class="font-mono font-black text-lg text-emerald-400">14:59</div>
+            <button onclick="resetAuction()" class="text-[10px] text-rose-400 underline mt-0.5">Bekor qilish</button>
+          </div>
+        </div>
+
+        <div class="flex justify-between items-center px-1">
+          <span class="text-xs font-bold text-slate-300">Sotuvchilar takliflari (<span id="bidCount">0</span>)</span>
+          <span class="text-[11px] text-emerald-400 animate-pulse">● Jonli yangilanmoqda</span>
+        </div>
+
+        <div id="bidsContainer" class="space-y-2.5"></div>
+      </div>
+    </div>
+
+    <!-- SELLER VIEW -->
+    <div id="sellerView" class="hidden space-y-4">
+      <div class="glass rounded-2xl p-4 border border-slate-800 flex justify-between items-center">
+        <div>
+          <span class="text-[11px] text-slate-400">Sotuvchi balansi</span>
+          <div id="sellerWallet" class="text-lg font-extrabold text-white">150 000 so'm</div>
+        </div>
+        <button onclick="addSellerFunds()" class="px-3 py-1.5 rounded-xl bg-slate-800 border border-slate-700 text-xs font-bold text-emerald-400">+ To'ldirish</button>
+      </div>
+
+      <div class="glass rounded-2xl p-4 border border-slate-800 space-y-3">
+        <div class="flex justify-between items-start">
+          <div>
+            <span class="text-[10px] px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-400 font-bold">YANGI ARIZA</span>
+            <h3 id="sellerTargetTitle" class="font-bold text-base text-white mt-1">iPhone 15 Pro 256GB</h3>
+            <p id="sellerTargetRegion" class="text-xs text-slate-400">Hudud: Toshkent • Bugun kerak</p>
+          </div>
+        </div>
+
+        <div class="space-y-2.5 pt-2 border-t border-slate-800">
+          <div>
+            <label class="text-[11px] font-semibold text-slate-400">Sizning narxingiz</label>
+            <input id="sellerPriceInput" type="text" placeholder="Masalan: 940 yoki 1 000 000" class="w-full mt-1 px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-sm text-white focus:outline-none focus:border-emerald-500" />
+          </div>
+          <div>
+            <label class="text-[11px] font-semibold text-slate-400">Qo'shimcha bonus / shart</label>
+            <input id="sellerBonusInput" type="text" placeholder="Masalan: Bepul yetkazib berish + chexol" class="w-full mt-1 px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-sm text-white focus:outline-none focus:border-emerald-500" />
+          </div>
+          <div id="sellerNasiyaToggleWrapper" class="flex items-center justify-between py-2 px-3 rounded-xl bg-slate-900 border border-slate-800">
+            <span class="text-xs font-semibold text-slate-300">🏷️ Nasiya (bo'lib to'lash) bor</span>
+            <input id="sellerNasiyaCheck" type="checkbox" class="w-4 h-4 accent-emerald-500" />
+          </div>
+
+          <button onclick="submitSellerBid()" class="w-full py-2.5 rounded-xl bg-emerald-500 text-slate-950 font-extrabold text-sm">
+            📩 Taklif yuborish
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div id="escrowModal" class="hidden fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4">
+      <div class="glass w-full max-w-sm rounded-2xl p-5 border border-slate-700 space-y-4">
+        <div class="flex justify-between items-start">
+          <div>
+            <span class="text-[10px] font-bold text-emerald-400 uppercase">🛡️ Xavfsiz Garant Bitimi</span>
+            <h3 id="escrowTitle" class="font-bold text-base text-white">Akkaunt</h3>
+            <p id="escrowShop" class="text-xs text-slate-400">Sotuvchi</p>
+          </div>
+          <button onclick="document.getElementById('escrowModal').classList.add('hidden')" class="text-slate-400 text-lg">✕</button>
+        </div>
+
+        <div class="space-y-2.5 text-xs">
+          <div class="p-3 rounded-xl bg-slate-900 border border-slate-800 flex justify-between items-center">
+            <span>1. Pulni garantda muzlatish</span>
+            <button id="step1Btn" onclick="escrowStep1()" class="px-3 py-1 rounded-lg bg-emerald-500 text-slate-950 font-bold">To'lash</button>
+          </div>
+          <div id="step2Box" class="p-3 rounded-xl bg-slate-900 border border-slate-800 flex justify-between items-center opacity-40">
+            <span>2. Sotuvchi ma'lumot beradi</span>
+            <span id="step2Status" class="text-slate-400">Kutilmoqda</span>
+          </div>
+          <div id="step3Box" class="p-3 rounded-xl bg-slate-900 border border-slate-800 flex justify-between items-center opacity-40">
+            <span>3. Qabulni tasdiqlash</span>
+            <button id="step3Btn" onclick="escrowStep3()" disabled class="px-3 py-1 rounded-lg bg-emerald-500 text-slate-950 font-bold">Tasdiqlash</button>
+          </div>
+        </div>
+
+        <div id="escrowSuccessMsg" class="hidden p-3 rounded-xl bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 text-xs font-semibold text-center">
+          🎉 Bitim muvaffaqiyatli yakunlandi! Mablag' sotuvchiga o'tkazildi.
+        </div>
+      </div>
+    </div>
+
+    <div id="contactModal" class="hidden fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4">
+      <div class="glass w-full max-w-sm rounded-2xl p-5 border border-slate-700 space-y-4 text-center">
+        <div class="w-12 h-12 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center mx-auto text-xl">🤝</div>
+        <div>
+          <h3 id="contactShopName" class="font-extrabold text-lg text-white">Do'kon nomi</h3>
+          <p class="text-xs text-slate-400 mt-1">Taklif etilgan narx: <span id="contactPriceInfo" class="text-emerald-400 font-bold">$955</span></p>
+        </div>
+        <div class="p-3 rounded-xl bg-slate-900 border border-slate-800 text-xs text-slate-300">
+          📞 Telefon: <b class="text-white">+998 90 123 45 67</b><br/>
+          💬 Telegram: <b class="text-emerald-400">@kimarzon_seller</b>
+        </div>
+        <button onclick="document.getElementById('contactModal').classList.add('hidden')" class="w-full py-2.5 rounded-xl bg-emerald-500 text-slate-950 font-bold text-xs">Yopish</button>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    if (window.Telegram && window.Telegram.WebApp) {
+      window.Telegram.WebApp.ready();
+      window.Telegram.WebApp.expand();
+    }
+
+    let currentCategory = 'physical';
+    let bids = [];
+    let timerInterval = null;
+    let sellerBalance = 150000;
+
+    function selectCategory(cat, btn) {
+      currentCategory = cat;
+      document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('pill-active'));
+      btn.classList.add('pill-active');
+      ['physicalFields', 'socialFields', 'gameFields'].forEach(id => document.getElementById(id).classList.add('hidden'));
+      const nw = document.getElementById('sellerNasiyaToggleWrapper');
+      const chk = document.getElementById('sellerNasiyaCheck');
+      if (cat === 'social') {
+        document.getElementById('socialFields').classList.remove('hidden');
+        nw.classList.add('hidden');
+        chk.checked = false;
+      } else if (cat === 'game') {
+        document.getElementById('gameFields').classList.remove('hidden');
+        nw.classList.add('hidden');
+        chk.checked = false;
+      } else {
+        document.getElementById('physicalFields').classList.remove('hidden');
+        nw.classList.remove('hidden');
+      }
+    }
+
+    function selectPill(btn, g) {
+      document.querySelectorAll('.' + g + '-pill').forEach(b => b.classList.remove('pill-active'));
+      btn.classList.add('pill-active');
+    }
+
+    function switchRole(r) {
+      document.getElementById('buyerView').classList.toggle('hidden', r !== 'buyer');
+      document.getElementById('sellerView').classList.toggle('hidden', r !== 'seller');
+      document.getElementById('tabBuyer').className = r === 'buyer' ? "py-2 text-xs font-bold rounded-lg bg-emerald-500 text-slate-950" : "py-2 text-xs font-bold rounded-lg text-slate-400";
+      document.getElementById('tabSeller').className = r === 'seller' ? "py-2 text-xs font-bold rounded-lg bg-emerald-500 text-slate-950" : "py-2 text-xs font-bold rounded-lg text-slate-400";
+    }
+
+    function startAuction() {
+      const name = document.getElementById('itemNameInput').value.trim() || "iPhone 15 Pro 256GB";
+      const reg = document.getElementById('regionSelect').value;
+      const urg = document.getElementById('urgencySelect').value;
+      document.getElementById('activeItemTitle').innerText = name;
+      document.getElementById('activeItemMeta').innerText = `${reg} • ${urg}`;
+      document.getElementById('sellerTargetTitle').innerText = name;
+      document.getElementById('sellerTargetRegion').innerText = `Hudud: ${reg} • ${urg}`;
+      document.getElementById('createRequestCard').classList.add('hidden');
+      document.getElementById('liveAuctionRoom').classList.remove('hidden');
+      bids = [];
+      renderBids();
+      startTimer(899);
+      const isDig = (currentCategory === 'social' || currentCategory === 'game');
+      setTimeout(() => addBid(isDig ? "DigitalGarant UZ" : "Malika Store #12", isDig ? "1 200 000 so'm" : "$975", isDig ? "Toza pochta" : "Bepul dostavka", !isDig, 38), 1000);
+      setTimeout(() => addBid(isDig ? "ProAccs Market" : "TechHub UZ", isDig ? "1 050 000 so'm" : "$955", isDig ? "Tezkor topshirish" : "Chexol sovg'a", false, 64), 2500);
+    }
+
+    function addBid(shop, price, bonus, hasNasiya, deals) {
+      bids.unshift({ shop, price, bonus, hasNasiya, deals });
+      renderBids();
+    }
+
+    function renderBids() {
+      document.getElementById('bidCount').innerText = bids.length;
+      const isDig = (currentCategory === 'social' || currentCategory === 'game');
+      document.getElementById('bidsContainer').innerHTML = bids.map((b, i) => `
+        <div class="glass rounded-2xl p-3.5 border ${i===0?'border-emerald-500/50':'border-slate-800'} space-y-2">
+          <div class="flex justify-between">
+            <div><span class="font-bold text-sm text-white">${b.shop}</span><p class="text-[11px] text-slate-400">🛡️ ${b.deals} ta bitim • 4.9★</p></div>
+            <div class="text-right"><div class="font-extrabold text-base text-emerald-400">${b.price}</div>${(!isDig && b.hasNasiya)?'<span class="inline-block text-[10px] bg-amber-500/20 text-amber-400 px-2 py-0.5 rounded font-bold">🏷️ Nasiya bor</span>':''}</div>
+          </div>
+          <div class="flex justify-between items-center pt-2 border-t border-slate-800">
+            <span class="text-[11px] text-slate-300">🎁 ${b.bonus}</span>
+            <button onclick="chooseOffer('${b.shop}','${b.price}')" class="px-3.5 py-1.5 rounded-xl bg-emerald-500 text-slate-950 font-bold text-xs">${isDig?'🛡️ Garant':'Tanlash'}</button>
+          </div>
+        </div>`).join('');
+    }
+
+    function chooseOffer(shop, price) {
+      if (currentCategory === 'social' || currentCategory === 'game') {
+        document.getElementById('escrowTitle').innerText = document.getElementById('activeItemTitle').innerText;
+        document.getElementById('escrowShop').innerText = `Sotuvchi: ${shop} • ${price}`;
+        document.getElementById('escrowSuccessMsg').classList.add('hidden');
+        document.getElementById('step1Btn').disabled = false;
+        document.getElementById('step1Btn').innerText = "To'lash";
+        document.getElementById('step2Box').classList.add('opacity-40');
+        document.getElementById('step3Box').classList.add('opacity-40');
+        document.getElementById('step3Btn').disabled = true;
+        document.getElementById('escrowModal').classList.remove('hidden');
+      } else {
+        document.getElementById('contactShopName').innerText = shop;
+        document.getElementById('contactPriceInfo').innerText = price;
+        document.getElementById('contactModal').classList.remove('hidden');
+      }
+    }
+
+    function escrowStep1() {
+      document.getElementById('step1Btn').innerText = "✅ Muzlatildi";
+      document.getElementById('step1Btn').disabled = true;
+      document.getElementById('step2Box').classList.remove('opacity-40');
+      document.getElementById('step2Status').innerText = "Topshirilmoqda...";
+      setTimeout(() => {
+        document.getElementById('step2Status').innerText = "✅ Topshirildi";
+        document.getElementById('step3Box').classList.remove('opacity-40');
+        document.getElementById('step3Btn').disabled = false;
+      }, 1200);
+    }
+
+    function escrowStep3() {
+
