@@ -1,0 +1,100 @@
+    function selectCategory(cat, btn) {
+      currentCategory = cat;
+      document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('pill-active'));
+      btn.classList.add('pill-active');
+      ['physicalFields', 'socialFields', 'gameFields'].forEach(id => document.getElementById(id).classList.add('hidden'));
+      const nw = document.getElementById('sellerNasiyaToggleWrapper');
+      const chk = document.getElementById('sellerNasiyaCheck');
+      if (cat === 'social') {
+        document.getElementById('socialFields').classList.remove('hidden');
+        nw.classList.add('hidden');
+        chk.checked = false;
+      } else if (cat === 'game') {
+        document.getElementById('gameFields').classList.remove('hidden');
+        nw.classList.add('hidden');
+        chk.checked = false;
+      } else {
+        document.getElementById('physicalFields').classList.remove('hidden');
+        nw.classList.remove('hidden');
+      }
+    }
+    function selectPill(btn, g) {
+      document.querySelectorAll('.' + g + '-pill').forEach(b => b.classList.remove('pill-active'));
+      btn.classList.add('pill-active');
+    }
+    function switchRole(r) {
+      document.getElementById('buyerView').classList.toggle('hidden', r !== 'buyer');
+      document.getElementById('sellerView').classList.toggle('hidden', r !== 'seller');
+      document.getElementById('tabBuyer').className = r === 'buyer' ? "py-2 text-xs font-bold rounded-lg bg-emerald-500 text-slate-950" : "py-2 text-xs font-bold rounded-lg text-slate-400";
+      document.getElementById('tabSeller').className = r === 'seller' ? "py-2 text-xs font-bold rounded-lg bg-emerald-500 text-slate-950" : "py-2 text-xs font-bold rounded-lg text-slate-400";
+    }
+    function startAuction() {
+      const name = document.getElementById('itemNameInput').value.trim() || "iPhone 15 Pro 256GB";
+      const reg = document.getElementById('regionSelect').value;
+      const urg = document.getElementById('urgencySelect').value;
+      document.getElementById('activeItemTitle').innerText = name;
+      document.getElementById('activeItemMeta').innerText = `${reg} • ${urg}`;
+      document.getElementById('sellerTargetTitle').innerText = name;
+      document.getElementById('sellerTargetRegion').innerText = `Hudud: ${reg} • ${urg}`;
+      document.getElementById('createRequestCard').classList.add('hidden');
+      document.getElementById('liveAuctionRoom').classList.remove('hidden');
+      bids = []; renderBids(); startTimer(899);
+      const isDig = (currentCategory === 'social' || currentCategory === 'game');
+      setTimeout(() => addBid(isDig ? "DigitalGarant UZ" : "Malika Store #12", isDig ? "1 200 000 so'm" : "$975", isDig ? "Toza pochta" : "Bepul dostavka", !isDig, 38), 1000);
+      setTimeout(() => addBid(isDig ? "ProAccs Market" : "TechHub UZ", isDig ? "1 050 000 so'm" : "$955", isDig ? "Tezkor topshirish" : "Chexol sovg'a", false, 64), 2500);
+    }
+    function addBid(shop, price, bonus, hasNasiya, deals) {
+      bids.unshift({ shop, price, bonus, hasNasiya, deals });
+      renderBids();
+    }
+    function renderBids() {
+      document.getElementById('bidCount').innerText = bids.length;
+      const isDig = (currentCategory === 'social' || currentCategory === 'game');
+      document.getElementById('bidsContainer').innerHTML = bids.map((b, i) => `
+        <div class="glass rounded-2xl p-3.5 border ${i===0?'border-emerald-500/50':'border-slate-800'} space-y-2">
+          <div class="flex justify-between">
+            <div><span class="font-bold text-sm text-white">${b.shop}</span><p class="text-[11px] text-slate-400">🛡️ ${b.deals} ta bitim • 4.9★</p></div>
+            <div class="text-right"><div class="font-extrabold text-base text-emerald-400">${b.price}</div>${(!isDig && b.hasNasiya)?'<span class="inline-block text-[10px] bg-amber-500/20 text-amber-400 px-2 py-0.5 rounded font-bold">🏷️ Nasiya bor</span>':''}</div>
+          </div>
+          <div class="flex justify-between items-center pt-2 border-t border-slate-800">
+            <span class="text-[11px] text-slate-300">🎁 ${b.bonus}</span>
+            <button onclick="chooseOffer('${b.shop}','${b.price}')" class="px-3.5 py-1.5 rounded-xl bg-emerald-500 text-slate-950 font-bold text-xs">${isDig?'🛡️ Garant':'Tanlash'}</button>
+          </div>
+        </div>`).join('');
+    }
+    function chooseOffer(shop, price) {
+      if (currentCategory === 'social' || currentCategory === 'game') {
+        document.getElementById('escrowTitle').innerText = document.getElementById('activeItemTitle').innerText;
+        document.getElementById('escrowShop').innerText = `Sotuvchi: ${shop} • ${price}`;
+        document.getElementById('escrowSuccessMsg').classList.add('hidden');
+        document.getElementById('step1Btn').disabled = false; document.getElementById('step1Btn').innerText = "To'lash";
+        document.getElementById('step2Box').classList.add('opacity-40'); document.getElementById('step3Box').classList.add('opacity-40');
+        document.getElementById('step3Btn').disabled = true; document.getElementById('escrowModal').classList.remove('hidden');
+      } else {
+        document.getElementById('contactShopName').innerText = shop; document.getElementById('contactPriceInfo').innerText = price;
+        document.getElementById('contactModal').classList.remove('hidden');
+      }
+    }
+    function escrowStep1() {
+      document.getElementById('step1Btn').innerText = "✅ Muzlatildi"; document.getElementById('step1Btn').disabled = true;
+      document.getElementById('step2Box').classList.remove('opacity-40'); document.getElementById('step2Status').innerText = "Topshirilmoqda...";
+      setTimeout(() => { document.getElementById('step2Status').innerText = "✅ Topshirildi"; document.getElementById('step3Box').classList.remove('opacity-40'); document.getElementById('step3Btn').disabled = false; }, 1200);
+    }
+    function escrowStep3() {
+      document.getElementById('step3Btn').innerText = "✅ Tasdiqlandi"; document.getElementById('step3Btn').disabled = true;
+      document.getElementById('escrowSuccessMsg').classList.remove('hidden');
+    }
+    function submitSellerBid() {
+      const p = document.getElementById('sellerPriceInput').value; if (!p) return;
+      const b = document.getElementById('sellerBonusInput').value || "Tezkor aloqa";
+      const isDig = (currentCategory === 'social' || currentCategory === 'game');
+      addBid("Sizning Do'koningiz", isDig ? `${p} so'm` : `$${p}`, b, !isDig && document.getElementById('sellerNasiyaCheck').checked, 15);
+      switchRole('buyer');
+    }
+    function addSellerFunds() { sellerBalance += 50000; document.getElementById('sellerWallet').innerText = sellerBalance.toLocaleString() + " so'm"; }
+    function resetAuction() { clearInterval(timerInterval); document.getElementById('liveAuctionRoom').classList.add('hidden'); document.getElementById('createRequestCard').classList.remove('hidden'); }
+    function startTimer(d) { clearInterval(timerInterval); let t = d; timerInterval = setInterval(() => { document.getElementById('timerDisplay').innerText = `${String(Math.floor(t/60)).padStart(2,'0')}:${String(t%60).padStart(2,'0')}`; if (--t < 0) clearInterval(timerInterval); }, 1000); }
+  </script>
+  </div>
+</body>
+</html>
